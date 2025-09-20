@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesmen Hiragana</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: transform 0.2s ease-in-out;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .back-btn {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            transition: transform 0.2s ease-in-out;
+        }
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+        .hiragana-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .hiragana-cell:hover {
+            background-color: #e2e8f0;
+            transform: scale(1.1);
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main Application Container -->
+    <div id="app-container" class="container mx-auto">
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="card text-center transition-opacity duration-500">
+            <h1 class="text-3xl font-bold mb-4 text-indigo-700">Asesmen Hiragana</h1>
+            <p class="mb-6 text-gray-600">Silakan login untuk memulai asesmen.</p>
+            <form id="login-form" class="space-y-4">
+                <input type="text" id="username" placeholder="Username" class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" required>
+                <input type="text" id="nis" placeholder="NIS" class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" required>
+                <button type="submit" class="w-full bg-indigo-600 text-white btn hover:bg-indigo-700">Masuk</button>
+            </form>
+            <div id="login-message" class="mt-4 text-red-500"></div>
+        </div>
+
+        <!-- Main Menu Screen -->
+        <div id="main-menu" class="card text-center hidden transition-opacity duration-500 opacity-0">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Selamat Datang, <span id="display-username"></span>!</h2>
+            <p class="mb-6 text-gray-600">Pilih peta atau mode belajar untuk memulai.</p>
+            <div class="space-y-4">
+                <button id="start-study-mode-btn" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Mode Belajar</button>
+                <button id="peta-dasar-btn" class="w-full bg-green-500 text-white btn hover:bg-green-600">Peta Hiragana Dasar</button>
+                <button id="peta-dakuon-btn" class="w-full bg-yellow-500 text-white btn hover:bg-yellow-600">Peta Hiragana Dakuon & Handakuon</button>
+                <button id="history-btn" class="w-full bg-gray-500 text-white btn hover:bg-gray-600">Riwayat Skor</button>
+            </div>
+            <button id="logout-btn" class="mt-8 text-gray-500 hover:text-red-500 transition-colors">Keluar</button>
+        </div>
+
+        <!-- Study Mode Screen -->
+        <div id="study-mode-screen" class="card hidden transition-opacity duration-500 opacity-0">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Tabel Hiragana Dasar</h2>
+            <p class="mb-6 text-gray-600">Klik huruf untuk melihat cara bacanya.</p>
+            <div id="hiragana-grid" class="grid grid-cols-5 gap-4">
+                <!-- Hiragana characters will be generated here -->
+            </div>
+            <button id="back-to-main-menu-from-study" class="mt-8 back-btn">Kembali</button>
+        </div>
+
+        <!-- Peta Hiragana Dasar Menu -->
+        <div id="peta-dasar-menu" class="card text-center hidden transition-opacity duration-500 opacity-0">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Peta Hiragana Dasar</h2>
+            <p class="mb-6 text-gray-600">Pilih level untuk memulai asesmen.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="start-level-1" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 1: Huruf a,i,u,e,o,ka...</button>
+                <button id="start-level-2" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 2: Kata Dasar</button>
+                <button id="start-level-3-huruf" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 3: Huruf sa,shi,su,se,so...</button>
+                <button id="start-level-3-kata" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 3: Kata Lanjutan</button>
+                <button id="start-level-4-huruf" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 4: Huruf na,ni,nu,ne,no...</button>
+                <button id="start-level-4-kata" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 4: Kata Lanjutan</button>
+                <button id="start-level-5" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 5: Huruf wa,wo,n,ya,yu,yo</button>
+                <button id="start-level-6-huruf" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 6: Huruf ha,hi,fu,he,ho...</button>
+                <button id="start-level-6-kata" class="w-full bg-blue-500 text-white btn hover:bg-blue-600">Level 6: Kata Lanjutan</button>
+            </div>
+            <button id="back-to-main-menu-btn" class="mt-8 back-btn">Kembali</button>
+        </div>
+
+        <!-- Peta Hiragana Dakuon & Handakuon Menu -->
+        <div id="peta-dakuon-menu" class="card text-center hidden transition-opacity duration-500 opacity-0">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Peta Hiragana Dakuon & Handakuon</h2>
+            <p class="mb-6 text-gray-600">Pilih level untuk memulai asesmen.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="start-level-7-huruf" class="w-full bg-yellow-500 text-white btn hover:bg-yellow-600">Level 7: Huruf Dakuon ga,gi,gu...</button>
+                <button id="start-level-7-kata" class="w-full bg-yellow-500 text-white btn hover:bg-yellow-600">Level 7: Kata Dakuon</button>
+                <button id="start-level-8-huruf" class="w-full bg-yellow-500 text-white btn hover:bg-yellow-600">Level 8: Huruf Handakuon pa,pi,pu...</button>
+                <button id="start-level-8-kata" class="w-full bg-yellow-500 text-white btn hover:bg-yellow-600">Level 8: Kata Handakuon</button>
+            </div>
+            <button id="back-to-main-menu-from-dakuon" class="mt-8 back-btn">Kembali</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="card hidden transition-opacity duration-500 opacity-0">
+            <h2 id="quiz-title" class="text-2xl font-bold mb-4 text-indigo-700 text-center"></h2>
+            <div id="question-area" class="text-center mb-8">
+                <div id="hiragana-display" class="text-7xl font-bold text-gray-800 mb-4 transition-transform duration-300"></div>
+                <input type="text" id="answer-input" placeholder="Tulis jawaban Anda" class="w-full max-w-sm mx-auto text-center px-4 py-2 border rounded-full text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+            </div>
+            <div id="quiz-message" class="text-center mb-4 text-xl font-bold"></div>
+            <div class="flex justify-between items-center">
+                <div class="text-lg font-semibold text-gray-600">Soal <span id="question-counter">0</span> dari <span id="total-questions">0</span></div>
+                <button id="next-btn" class="bg-indigo-600 text-white btn hover:bg-indigo-700">Lanjut</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="card text-center hidden transition-opacity duration-500 opacity-0">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">Hasil Asesmen</h2>
+            <div class="text-5xl font-extrabold text-green-500 mb-4">
+                <span id="score-display">0</span> / <span id="total-questions-result">0</span>
+            </div>
+            <p id="result-message" class="text-xl mb-6 text-gray-600"></p>
+            <button id="back-to-menu-btn" class="w-full bg-gray-500 text-white btn hover:bg-gray-600">Kembali ke Menu</button>
+        </div>
+
+        <!-- Score History Screen -->
+        <div id="history-screen" class="card hidden transition-opacity duration-500 opacity-0">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Riwayat Skor</h2>
+            <p class="text-sm text-gray-500 mb-4">ID Pengguna: <span id="user-id-display">Memuat...</span></p>
+            <div id="history-list" class="space-y-4">
+                <p class="text-gray-500 text-center">Memuat riwayat...</p>
+            </div>
+            <button id="back-from-history-btn" class="mt-8 back-btn">Kembali</button>
+        </div>
+    </div>
+    
+    <!-- Modal for Study Mode -->
+    <div id="hiragana-modal" class="modal hidden" onclick="this.classList.add('hidden')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modal-hiragana" class="text-8xl font-bold text-indigo-700"></div>
+            <div id="modal-romaji" class="text-4xl font-semibold text-gray-600"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables from the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Firebase initialization
+        setLogLevel('debug');
+        let app, auth, db;
+        let userId = null;
+        let isAuthReady = false;
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                } else {
+                    if (initialAuthToken) {
+                        try {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                            userId = auth.currentUser.uid;
+                        } catch (error) {
+                            console.error("Error signing in with custom token:", error);
+                            await signInAnonymously(auth);
+                            userId = auth.currentUser.uid;
+                        }
+                    } else {
+                        await signInAnonymously(auth);
+                        userId = auth.currentUser.uid;
+                    }
+                }
+                isAuthReady = true;
+                document.getElementById('user-id-display').textContent = userId;
+                console.log("User ID:", userId);
+                fetchHistory();
+            });
+        }
+
+        // Data soal untuk semua level
+        const level1Hiragana = [
+            { hiragana: 'あ', romaji: 'a' }, { hiragana: 'い', romaji: 'i' }, { hiragana: 'う', romaji: 'u' },
+            { hiragana: 'え', romaji: 'e' }, { hiragana: 'お', romaji: 'o' }, { hiragana: 'か', romaji: 'ka' },
+            { hiragana: 'き', romaji: 'ki' }, { hiragana: 'く', romaji: 'ku' }, { hiragana: 'け', romaji: 'ke' },
+            { hiragana: 'こ', romaji: 'ko' }
+        ];
+        const level2Kata = [
+            { hiragana: 'あか', romaji: 'aka' }, { hiragana: 'いえ', romaji: 'ie' },
+            { hiragana: 'かき', romaji: 'kaki' }, { hiragana: 'こい', romaji: 'koi' },
+            { hiragana: 'いけ', romaji: 'ike' }, { hiragana: 'うえ', romaji: 'ue' },
+            { hiragana: 'あおい', romaji: 'aoi' }, { hiragana: 'えき', romaji: 'eki' },
+            { hiragana: 'かお', romaji: 'kao' }, { hiragana: 'きく', romaji: 'kiku' }
+        ];
+        const level3Hiragana = [
+            { hiragana: 'さ', romaji: 'sa' }, { hiragana: 'し', romaji: 'shi' }, { hiragana: 'す', romaji: 'su' },
+            { hiragana: 'せ', romaji: 'se' }, { hiragana: 'そ', romaji: 'so' }, { hiragana: 'た', romaji: 'ta' },
+            { hiragana: 'ち', romaji: 'chi' }, { hiragana: 'つ', romaji: 'tsu' }, { hiragana: 'て', romaji: 'te' },
+            { hiragana: 'と', romaji: 'to' }
+        ];
+        const level3Kata = [
+            { hiragana: 'そと', romaji: 'soto' }, { hiragana: 'した', romaji: 'shita' },
+            { hiragana: 'すし', romaji: 'sushi' }, { hiragana: 'ちかてつ', romaji: 'chikatetsu' },
+            { hiragana: 'あさ', romaji: 'asa' }, { hiragana: 'たつ', romaji: 'tatsu' },
+            { hiragana: 'きせつ', romaji: 'kisetsu' }, { hiragana: 'つち', romaji: 'tsuchi' },
+            { hiragana: 'さか', romaji: 'saka' }, { hiragana: 'とけい', romaji: 'tokei' }
+        ];
+        const level4Hiragana = [
+            { hiragana: 'な', romaji: 'na' }, { hiragana: 'に', romaji: 'ni' }, { hiragana: 'ぬ', romaji: 'nu' },
+            { hiragana: 'ね', romaji: 'ne' }, { hiragana: 'の', romaji: 'no' }, { hiragana: 'ら', romaji: 'ra' },
+            { hiragana: 'り', romaji: 'ri' }, { hiragana: 'る', romaji: 'ru' }, { hiragana: 'れ', romaji: 're' },
+            { hiragana: 'ろ', romaji: 'ro' }
+        ];
+        const level4Kata = [
+            { hiragana: 'なつ', romaji: 'natsu' }, { hiragana: 'にほん', romaji: 'nihon' },
+            { hiragana: 'ねこ', romaji: 'neko' }, { hiragana: 'のり', romaji: 'nori' },
+            { hiragana: 'らーめん', romaji: 'ramen' }, { hiragana: 'るす', romaji: 'rusu' },
+            { hiragana: 'れんしゅう', romaji: 'renshuu' }, { hiragana: 'ろく', romaji: 'roku' },
+            { hiragana: 'なまえ', romaji: 'namae' }, { hiragana: 'はな', romaji: 'hana' }
+        ];
+        const level5Hiragana = [
+            { hiragana: 'わ', romaji: 'wa' }, { hiragana: 'を', romaji: 'wo' }, { hiragana: 'ん', romaji: 'n' },
+            { hiragana: 'や', romaji: 'ya' }, { hiragana: 'ゆ', romaji: 'yu' }, { hiragana: 'よ', romaji: 'yo' }
+        ];
+        const level6Hiragana = [
+            { hiragana: 'は', romaji: 'ha' }, { hiragana: 'ひ', romaji: 'hi' }, { hiragana: 'ふ', romaji: 'fu' },
+            { hiragana: 'へ', romaji: 'he' }, { hiragana: 'ほ', romaji: 'ho' }, { hiragana: 'ま', romaji: 'ma' },
+            { hiragana: 'み', romaji: 'mi' }, { hiragana: 'む', romaji: 'mu' }, { hiragana: 'め', romaji: 'me' },
+            { hiragana: 'も', romaji: 'mo' }
+        ];
+        const level6Kata = [
+            { hiragana: 'はし', romaji: 'hashi' }, { hiragana: 'ふね', romaji: 'fune' },
+            { hiragana: 'ほし', romaji: 'hoshi' }, { hiragana: 'みみ', romaji: 'mimi' },
+            { hiragana: 'むし', romaji: 'mushi' }, { hiragana: 'めがね', romaji: 'megane' },
+            { hiragana: 'はれ', romaji: 'hare' }, { hiragana: 'ひま', romaji: 'hima' },
+            { hiragana: 'ふゆ', romaji: 'fuyu' }, { hiragana: 'もも', romaji: 'momo' }
+        ];
+        
+        // Dakuon and Handakuon data
+        const level7Dakuon = [
+            { hiragana: 'が', romaji: 'ga' }, { hiragana: 'ぎ', romaji: 'gi' }, { hiragana: 'ぐ', romaji: 'gu' },
+            { hiragana: 'げ', romaji: 'ge' }, { hiragana: 'ご', romaji: 'go' }, { hiragana: 'ざ', romaji: 'za' },
+            { hiragana: 'じ', romaji: 'ji' }, { hiragana: 'ず', romaji: 'zu' }, { hiragana: 'ぜ', romaji: 'ze' },
+            { hiragana: 'ぞ', romaji: 'zo' }
+        ];
+        const level7Kata = [
+            { hiragana: 'かぜ', romaji: 'kaze' }, { hiragana: 'でぐち', romaji: 'deguchi' },
+            { hiragana: 'なぞ', romaji: 'nazo' }, { hiragana: 'みず', romaji: 'mizu' },
+            { hiragana: 'ごみ', romaji: 'gomi' }, { hiragana: 'じかん', romaji: 'jikan' },
+            { hiragana: 'ちず', romaji: 'chizu' }, { hiragana: 'かぎ', romaji: 'kagi' },
+            { hiragana: 'たずねる', romaji: 'tazuneru' }, { hiragana: 'ぞう', romaji: 'zou' }
+        ];
+
+        const level8Handakuon = [
+            { hiragana: 'ぱ', romaji: 'pa' }, { hiragana: 'ぴ', romaji: 'pi' }, { hiragana: 'ぷ', romaji: 'pu' },
+            { hiragana: 'ぺ', romaji: 'pe' }, { hiragana: 'ぽ', romaji: 'po' }
+        ];
+
+        const level8Kata = [
+            { hiragana: 'てんぷら', romaji: 'tenpura' }, { hiragana: 'しんぱい', romaji: 'shinpai' },
+            { hiragana: 'こんぴゅーたー', romaji: 'konpyuutaa' }, { hiragana: 'はっぱ', romaji: 'happa' },
+            { hiragana: 'きっぷ', romaji: 'kippu' }, { hiragana: 'ペン', romaji: 'pen' },
+            { hiragana: 'ポテト', romaji: 'poteto' }, { hiragana: 'ぱん', romaji: 'pan' },
+            { hiragana: 'ぴあの', romaji: 'piano' }, { hiragana: 'ぷーる', romaji: 'puuru' }
+        ];
+
+        const allHiragana = [
+            ...level1Hiragana,
+            ...level3Hiragana,
+            ...level4Hiragana,
+            ...level5Hiragana,
+            ...level6Hiragana,
+            ...level7Dakuon,
+            ...level8Handakuon
+        ];
+        
+        // DOM Elements
+        const loginScreen = document.getElementById('login-screen');
+        const mainMenu = document.getElementById('main-menu');
+        const studyModeScreen = document.getElementById('study-mode-screen');
+        const petaDasarMenu = document.getElementById('peta-dasar-menu');
+        const petaDakuonMenu = document.getElementById('peta-dakuon-menu');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const historyScreen = document.getElementById('history-screen');
+        const loginForm = document.getElementById('login-form');
+        const displayUsername = document.getElementById('display-username');
+        const startStudyModeBtn = document.getElementById('start-study-mode-btn');
+        const petaDasarBtn = document.getElementById('peta-dasar-btn');
+        const petaDakuonBtn = document.getElementById('peta-dakuon-btn');
+        const historyBtn = document.getElementById('history-btn');
+        const startLevel1Btn = document.getElementById('start-level-1');
+        const startLevel2Btn = document.getElementById('start-level-2');
+        const startLevel3HurufBtn = document.getElementById('start-level-3-huruf');
+        const startLevel3KataBtn = document.getElementById('start-level-3-kata');
+        const startLevel4HurufBtn = document.getElementById('start-level-4-huruf');
+        const startLevel4KataBtn = document.getElementById('start-level-4-kata');
+        const startLevel5Btn = document.getElementById('start-level-5');
+        const startLevel6HurufBtn = document.getElementById('start-level-6-huruf');
+        const startLevel6KataBtn = document.getElementById('start-level-6-kata');
+        const startLevel7HurufBtn = document.getElementById('start-level-7-huruf');
+        const startLevel7KataBtn = document.getElementById('start-level-7-kata');
+        const startLevel8HurufBtn = document.getElementById('start-level-8-huruf');
+        const startLevel8KataBtn = document.getElementById('start-level-8-kata');
+        const quizTitle = document.getElementById('quiz-title');
+        const hiraganaDisplay = document.getElementById('hiragana-display');
+        const answerInput = document.getElementById('answer-input');
+        const nextBtn = document.getElementById('next-btn');
+        const quizMessage = document.getElementById('quiz-message');
+        const questionCounter = document.getElementById('question-counter');
+        const totalQuestions = document.getElementById('total-questions');
+        const scoreDisplay = document.getElementById('score-display');
+        const totalQuestionsResult = document.getElementById('total-questions-result');
+        const resultMessage = document.getElementById('result-message');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        const backToMainMenuBtn = document.getElementById('back-to-main-menu-btn');
+        const backToMainMenuFromStudyBtn = document.getElementById('back-to-main-menu-from-study');
+        const backToMainMenuFromDakuonBtn = document.getElementById('back-to-main-menu-from-dakuon');
+        const backFromHistoryBtn = document.getElementById('back-from-history-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const hiraganaGrid = document.getElementById('hiragana-grid');
+        const hiraganaModal = document.getElementById('hiragana-modal');
+        const modalHiragana = document.getElementById('modal-hiragana');
+        const modalRomaji = document.getElementById('modal-romaji');
+        const historyList = document.getElementById('history-list');
+
+        // Application State
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let totalQuestionCount = 0;
+        let currentLevelTitle = "";
+
+        // Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Function to show a screen
+        function showScreen(screen) {
+            const screens = [loginScreen, mainMenu, studyModeScreen, petaDasarMenu, petaDakuonMenu, quizScreen, resultScreen, historyScreen];
+            screens.forEach(s => {
+                s.classList.add('hidden', 'opacity-0');
+            });
+            screen.classList.remove('hidden');
+            setTimeout(() => {
+                screen.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        // --- Login Logic ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const nis = document.getElementById('nis').value;
+            if (username && nis) {
+                displayUsername.textContent = username;
+                showScreen(mainMenu);
+            } else {
+                document.getElementById('login-message').textContent = 'Mohon isi semua kolom.';
+            }
+        });
+
+        // --- Menu Navigation Logic ---
+        startStudyModeBtn.addEventListener('click', () => {
+            loadStudyMode();
+            showScreen(studyModeScreen);
+        });
+
+        petaDasarBtn.addEventListener('click', () => {
+            showScreen(petaDasarMenu);
+        });
+
+        petaDakuonBtn.addEventListener('click', () => {
+            showScreen(petaDakuonMenu);
+        });
+        
+        historyBtn.addEventListener('click', () => {
+            showScreen(historyScreen);
+            fetchHistory();
+        });
+        
+        backToMainMenuBtn.addEventListener('click', () => {
+            showScreen(mainMenu);
+        });
+        
+        backToMainMenuFromStudyBtn.addEventListener('click', () => {
+            showScreen(mainMenu);
+        });
+
+        backToMainMenuFromDakuonBtn.addEventListener('click', () => {
+            showScreen(mainMenu);
+        });
+        
+        backFromHistoryBtn.addEventListener('click', () => {
+            showScreen(mainMenu);
+        });
+
+        // --- Study Mode Logic ---
+        function loadStudyMode() {
+            hiraganaGrid.innerHTML = '';
+            allHiragana.forEach(item => {
+                const cell = document.createElement('div');
+                cell.className = 'hiragana-cell bg-indigo-100 text-indigo-700';
+                cell.textContent = item.hiragana;
+                cell.addEventListener('click', () => {
+                    modalHiragana.textContent = item.hiragana;
+                    modalRomaji.textContent = item.romaji;
+                    hiraganaModal.classList.remove('hidden');
+                });
+                hiraganaGrid.appendChild(cell);
+            });
+        }
+
+        // --- Level Buttons Logic ---
+        startLevel1Btn.addEventListener('click', () => {
+            const shuffledLevel1 = shuffleArray([...level1Hiragana]);
+            startQuiz(shuffledLevel1.slice(0, 10), "Level 1: Tebak Huruf Dasar");
+        });
+
+        startLevel2Btn.addEventListener('click', () => {
+            const shuffledLevel2 = shuffleArray([...level2Kata]);
+            startQuiz(shuffledLevel2.slice(0, 10), "Level 2: Tebak Kata Dasar");
+        });
+
+        startLevel3HurufBtn.addEventListener('click', () => {
+            const shuffledLevel3 = shuffleArray([...level3Hiragana]);
+            startQuiz(shuffledLevel3.slice(0, 10), "Level 3: Tebak Huruf");
+        });
+
+        startLevel3KataBtn.addEventListener('click', () => {
+            const shuffledLevel3Kata = shuffleArray([...level3Kata]);
+            startQuiz(shuffledLevel3Kata.slice(0, 10), "Level 3: Tebak Kata");
+        });
+        
+        startLevel4HurufBtn.addEventListener('click', () => {
+            const shuffledLevel4 = shuffleArray([...level4Hiragana]);
+            startQuiz(shuffledLevel4.slice(0, 10), "Level 4: Tebak Huruf");
+        });
+
+        startLevel4KataBtn.addEventListener('click', () => {
+            const shuffledLevel4Kata = shuffleArray([...level4Kata]);
+            startQuiz(shuffledLevel4Kata.slice(0, 10), "Level 4: Tebak Kata");
+        });
+
+        startLevel5Btn.addEventListener('click', () => {
+            const shuffledLevel5 = shuffleArray([...level5Hiragana]);
+            startQuiz(shuffledLevel5.slice(0, 6), "Level 5: Tebak Huruf");
+        });
+        
+        startLevel6HurufBtn.addEventListener('click', () => {
+            const shuffledLevel6 = shuffleArray([...level6Hiragana]);
+            startQuiz(shuffledLevel6.slice(0, 10), "Level 6: Tebak Huruf");
+        });
+
+        startLevel6KataBtn.addEventListener('click', () => {
+            const shuffledLevel6Kata = shuffleArray([...level6Kata]);
+            startQuiz(shuffledLevel6Kata.slice(0, 10), "Level 6: Tebak Kata");
+        });
+        
+        startLevel7HurufBtn.addEventListener('click', () => {
+            const shuffledLevel7 = shuffleArray([...level7Dakuon]);
+            startQuiz(shuffledLevel7.slice(0, 10), "Level 7: Tebak Huruf Dakuon");
+        });
+        
+        startLevel7KataBtn.addEventListener('click', () => {
+            const shuffledLevel7Kata = shuffleArray([...level7Kata]);
+            startQuiz(shuffledLevel7Kata.slice(0, 10), "Level 7: Tebak Kata Dakuon");
+        });
+
+        startLevel8HurufBtn.addEventListener('click', () => {
+            const shuffledLevel8 = shuffleArray([...level8Handakuon]);
+            startQuiz(shuffledLevel8.slice(0, 5), "Level 8: Tebak Huruf Handakuon");
+        });
+
+        startLevel8KataBtn.addEventListener('click', () => {
+            const shuffledLevel8Kata = shuffleArray([...level8Kata]);
+            startQuiz(shuffledLevel8Kata.slice(0, 10), "Level 8: Tebak Kata Handakuon");
+        });
+        
+        // Function to start a quiz
+        function startQuiz(questions, title) {
+            currentQuestions = questions;
+            totalQuestionCount = questions.length;
+            currentQuestionIndex = 0;
+            score = 0;
+            currentLevelTitle = title;
+            
+            quizTitle.textContent = title;
+            totalQuestions.textContent = totalQuestionCount;
+            
+            showScreen(quizScreen);
+            loadQuestion();
+        }
+
+        // Function to load a question
+        function loadQuestion() {
+            if (currentQuestionIndex < totalQuestionCount) {
+                const question = currentQuestions[currentQuestionIndex];
+                hiraganaDisplay.textContent = question.hiragana;
+                answerInput.value = '';
+                quizMessage.textContent = '';
+                answerInput.focus();
+                questionCounter.textContent = currentQuestionIndex + 1;
+            } else {
+                showResult();
+            }
+        }
+
+        // --- Next Button Logic ---
+        nextBtn.addEventListener('click', () => {
+            const question = currentQuestions[currentQuestionIndex];
+            const userAnswer = answerInput.value.toLowerCase().trim();
+            const correctAnswer = question.romaji.toLowerCase().trim();
+
+            if (userAnswer === correctAnswer) {
+                score++;
+                quizMessage.textContent = 'Jawaban Benar!';
+                quizMessage.classList.remove('text-red-500');
+                quizMessage.classList.add('text-green-500');
+            } else {
+                quizMessage.textContent = `Jawaban salah. Jawaban yang benar adalah "${correctAnswer}".`;
+                quizMessage.classList.remove('text-green-500');
+                quizMessage.classList.add('text-red-500');
+            }
+
+            currentQuestionIndex++;
+            setTimeout(() => {
+                loadQuestion();
+            }, 1500); // Wait a bit before moving on
+        });
+
+        // Add event listener for "Enter" keypress
+        answerInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                nextBtn.click();
+            }
+        });
+
+        // --- Result Screen Logic ---
+        function showResult() {
+            scoreDisplay.textContent = score;
+            totalQuestionsResult.textContent = totalQuestionCount;
+            const percentage = (score / totalQuestionCount) * 100;
+
+            if (percentage >= 80) {
+                resultMessage.textContent = 'Selamat! Anda lulus dengan nilai yang sangat baik.';
+                resultMessage.classList.remove('text-yellow-600', 'text-red-600');
+                resultMessage.classList.add('text-green-600');
+            } else if (percentage >= 50) {
+                resultMessage.textContent = 'Bagus! Anda berhasil. Coba lagi untuk hasil yang lebih baik.';
+                resultMessage.classList.remove('text-green-600', 'text-red-600');
+                resultMessage.classList.add('text-yellow-600');
+            } else {
+                resultMessage.textContent = 'Teruslah berlatih. Anda pasti bisa lebih baik!';
+                resultMessage.classList.remove('text-green-600', 'text-yellow-600');
+                resultMessage.classList.add('text-red-600');
+            }
+            showScreen(resultScreen);
+            saveScore(score, totalQuestionCount, currentLevelTitle);
+        }
+        
+        // --- Firestore Logic ---
+        async function saveScore(score, total, level) {
+            if (!isAuthReady || !db) {
+                console.log("Firebase is not ready to save score.");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, `/artifacts/${appId}/users/${userId}/scores`), {
+                    score: score,
+                    totalQuestions: total,
+                    level: level,
+                    timestamp: new Date().getTime(),
+                    username: document.getElementById('username').value,
+                });
+                console.log("Score saved successfully!");
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        }
+
+        function fetchHistory() {
+            if (!isAuthReady || !db || !userId) {
+                historyList.innerHTML = `<p class="text-gray-500 text-center">Firebase tidak siap. Silakan coba lagi.</p>`;
+                return;
+            }
+
+            const q = query(collection(db, `/artifacts/${appId}/users/${userId}/scores`), orderBy("timestamp", "desc"));
+            
+            onSnapshot(q, (querySnapshot) => {
+                const scores = [];
+                querySnapshot.forEach((doc) => {
+                    scores.push(doc.data());
+                });
+
+                if (scores.length === 0) {
+                    historyList.innerHTML = `<p class="text-gray-500 text-center">Belum ada riwayat skor.</p>`;
+                } else {
+                    historyList.innerHTML = '';
+                    scores.forEach((s) => {
+                        const scoreCard = document.createElement('div');
+                        scoreCard.className = 'bg-gray-100 p-4 rounded-lg flex justify-between items-center';
+                        
+                        const date = new Date(s.timestamp).toLocaleString('id-ID', {
+                            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                        });
+                        
+                        scoreCard.innerHTML = `
+                            <div>
+                                <h4 class="font-bold text-lg">${s.level}</h4>
+                                <p class="text-sm text-gray-500">${date}</p>
+                            </div>
+                            <div class="text-2xl font-bold text-indigo-600">
+                                ${s.score} / ${s.totalQuestions}
+                            </div>
+                        `;
+                        historyList.appendChild(scoreCard);
+                    });
+                }
+            }, (error) => {
+                console.error("Error fetching history:", error);
+                historyList.innerHTML = `<p class="text-red-500 text-center">Gagal memuat riwayat. Silakan coba lagi.</p>`;
+            });
+        }
+
+        // --- Navigation Buttons Logic ---
+        backToMenuBtn.addEventListener('click', () => {
+            showScreen(petaDasarMenu);
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            document.getElementById('username').value = '';
+            document.getElementById('nis').value = '';
+            showScreen(loginScreen);
+        });
+    </script>
+</body>
+</html>
