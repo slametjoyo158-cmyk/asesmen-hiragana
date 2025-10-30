@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesmen Sumatif Nihongo Kelas XII</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+        }
+        .btn-option {
+            transition: all 0.2s ease;
+            box-shadow: 0 4px #4c51bf; /* Indigo-700 shadow */
+        }
+        /* FIX: Pointer events di-disable pada elemen span agar klik pada teks span tetap mengenai tombol parent */
+        .btn-option * {
+            pointer-events: none; 
+        }
+
+        .btn-option:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px #4c51bf;
+        }
+        .btn-option:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px #4c51bf;
+        }
+        .timer-red {
+            animation: pulse-red 1s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .hiragana-text {
+            font-size: 5rem;
+            line-height: 1;
+            font-weight: 800;
+        }
+
+        /* Modal styling */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex justify-center items-center">
+
+    <div class="container mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Ujian Sumatif Akhir Semester Gasal</h1>
+            <p class="text-gray-600 mt-1 text-xl">Mata Pelajaran Bahasa Jepang (Nihongo) Kelas XII</p>
+        </header>
+
+        <!-- Halaman Login -->
+        <div id="login-page" class="page card mx-auto max-w-lg">
+            <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Masuk Peserta Didik</h2>
+            <p class="text-red-500 mb-4 text-center font-semibold hidden" id="reload-message">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Sesi Anda berakhir karena berpindah tab. Silakan masuk kembali.
+            </p>
+            <label for="student-name" class="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
+            <input type="text" id="student-name" placeholder="Contoh: Budi Santoso" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
+            
+            <label for="student-nis" class="block text-gray-700 font-medium mb-2">NIS (Nomor Induk Siswa)</label>
+            <input type="text" id="student-nis" placeholder="Contoh: 12345678" class="w-full p-3 border border-gray-300 rounded-lg mb-6 focus:ring-blue-500 focus:border-blue-500">
+            
+            <button id="start-assessment-button" class="w-full bg-indigo-600 text-white font-semibold p-3 rounded-lg hover:bg-indigo-700 transition duration-200 shadow-md">Mulai Ujian</button>
+            <button onclick="showScoresPage()" class="w-full mt-4 bg-gray-500 text-white font-semibold p-3 rounded-lg hover:bg-gray-600 transition duration-200 shadow-md">Riwayat Skor</button>
+            <p id="login-error" class="text-red-500 mt-4 text-center hidden"></p>
+        </div>
+
+        <!-- Halaman Asesmen -->
+        <div id="assessment-page" class="page hidden card mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">Soal <span id="current-question-number">1</span> dari 40</h2>
+                <div class="flex items-center space-x-3 bg-red-100 p-2 rounded-lg border border-red-300 shadow-inner" id="timer-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-red-600 font-extrabold text-2xl" id="timer-display">30</span>
+                </div>
+            </div>
+
+            <div class="text-center mb-6 p-6 border-4 border-indigo-200 bg-indigo-50 rounded-xl">
+                <p class="text-4xl font-light text-gray-600 mb-2">Terjemahkan kata berikut:</p>
+                <span id="hiragana-word" class="hiragana-text text-indigo-800"></span>
+            </div>
+            
+            <!-- Opsi Jawaban -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Data-answer di sini hanya untuk identifikasi urutan tombol (A, B, C, D, E), bukan jawaban sebenarnya -->
+                <button class="answer-button btn-option bg-indigo-500 text-white p-4 rounded-xl font-semibold text-left" data-answer="a"><span class="font-bold mr-2">A.</span> <span class="option-text"></span></button>
+                <button class="answer-button btn-option bg-indigo-500 text-white p-4 rounded-xl font-semibold text-left" data-answer="b"><span class="font-bold mr-2">B.</span> <span class="option-text"></span></button>
+                <button class="answer-button btn-option bg-indigo-500 text-white p-4 rounded-xl font-semibold text-left" data-answer="c"><span class="font-bold mr-2">C.</span> <span class="option-text"></span></button>
+                <button class="answer-button btn-option bg-indigo-500 text-white p-4 rounded-xl font-semibold text-left" data-answer="d"><span class="font-bold mr-2">D.</span> <span class="option-text"></span></button>
+                <button class="answer-button btn-option bg-indigo-500 text-white p-4 rounded-xl font-semibold text-left" data-answer="e"><span class="font-bold mr-2">E.</span> <span class="option-text"></span></button>
+            </div>
+            
+            <div class="flex justify-between items-center mt-6 p-3 bg-gray-100 rounded-lg">
+                <p class="text-gray-700">Skor Sementara: <span class="font-bold text-lg text-green-600" id="current-score">0</span></p>
+                <p class="text-gray-700">Total Benar: <span class="font-bold text-lg text-green-600" id="total-correct">0</span></p>
+            </div>
+        </div>
+
+        <!-- Halaman Hasil -->
+        <div id="result-page" class="page hidden card mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-4 text-green-600">Ujian Selesai!</h2>
+            <p class="text-lg text-gray-700 mb-2">Skor Akhir Anda:</p>
+            <p id="final-score-display" class="text-6xl font-extrabold text-indigo-600 mb-6"></p>
+            <div class="bg-gray-100 p-4 rounded-lg mb-8">
+                <p class="text-md text-gray-600">Nama: <span class="font-semibold text-gray-800" id="result-name"></span></p>
+                <p class="text-md text-gray-600">NIS: <span class="font-semibold text-gray-800" id="result-nis"></span></p>
+                <p class="text-md text-gray-600">Jawaban Benar: <span class="font-bold text-green-600" id="result-correct-count"></span> dari 40</p>
+            </div>
+            <button onclick="showPage('login-page')" class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-700 transition duration-200">Selesai & Keluar</button>
+            <button onclick="showScoresPage()" class="mt-4 bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 block w-full md:inline-block md:w-auto md:ml-4">Lihat Riwayat Skor</button>
+        </div>
+
+        <!-- Halaman Riwayat Skor -->
+        <div id="scores-page" class="page hidden card mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Riwayat Skor Peserta Didik</h2>
+                <button onclick="showPage('login-page')" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">Kembali ke Login</button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                    <thead class="bg-indigo-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Nama (NIS)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Skor (Max 200)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scores-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Data skor akan dimasukkan di sini oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal untuk Re-do / Pemberitahuan Penting -->
+    <div id="modal-redo" class="modal hidden">
+        <div class="modal-content">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-red-500 mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <h3 class="text-2xl font-bold text-red-600 mb-3">Mohon Perhatian!</h3>
+            <p id="modal-redo-message" class="text-gray-700 mb-6 font-medium">Anda harus mengulang ujian dari awal.</p>
+            <button id="modal-redo-button" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200">Ulangi Ujian</button>
+        </div>
+    </div>
+
+    <script>
+        // Data Soal
+        const QUESTIONS_DATA = [
+            { q: 'えんぴつ', a: 'Pensil', options: ['Buku', 'Penghapus', 'Pensil', 'Tas', 'Pulpen'], type: 'Mochimono' },
+            { q: 'けしごむ', a: 'Penghapus', options: ['Penggaris', 'Penghapus', 'Buku catatan', 'Meja', 'Tas'], type: 'Mochimono' },
+            { q: 'かばん', a: 'Tas', options: ['Buku', 'Tas', 'Pulpen', 'Penggaris', 'Penghapus'], type: 'Mochimono' },
+            { q: 'ほん', a: 'Buku', options: ['Buku', 'Papan tulis', 'Kertas', 'Meja', 'Laci'], type: 'Mochimono' },
+            { q: 'ノート（のーと）', a: 'Buku catatan', options: ['Buku catatan', 'Tas', 'Pulpen', 'Buku gambar', 'Penggaris'], type: 'Mochimono' },
+            { q: 'シャープペンシル（しゃーぷぺんしる）', a: 'Pensil mekanik', options: ['Pensil mekanik', 'Buku', 'Tas', 'Penghapus', 'Gunting'], type: 'Mochimono' },
+            { q: 'はさみ', a: 'Gunting', options: ['Penggaris', 'Gunting', 'Buku', 'Kertas', 'Pulpen'], type: 'Mochimono' },
+            { q: 'じょうぎ', a: 'Penggaris', options: ['Buku', 'Penghapus', 'Penggaris', 'Tas', 'Pulpen'], type: 'Mochimono' },
+            { q: 'いす', a: 'Kursi', options: ['Meja', 'Kursi', 'Buku', 'Laci', 'Penggaris'], type: 'Mochimono' },
+            { q: 'つくえ', a: 'Meja', options: ['Kursi', 'Meja', 'Lantai', 'Buku', 'Papan tulis'], type: 'Mochimono' },
+            { q: 'でんわ', a: 'Telepon', options: ['Jam', 'Telepon', 'Buku', 'Meja', 'Pulpen'], type: 'Mochimono' },
+            { q: 'かぎ', a: 'Kunci', options: ['Tas', 'Kunci', 'Buku', 'Dompet', 'Penghapus'], type: 'Mochimono' },
+            { q: 'さいふ', a: 'Dompet', options: ['Penggaris', 'Dompet', 'Buku', 'Gunting', 'Tas'], type: 'Mochimono' },
+            { q: 'かみ', a: 'Kertas', options: ['Buku', 'Kertas', 'Pensil', 'Papan tulis', 'Meja'], type: 'Mochimono' },
+            { q: 'じしょ', a: 'Kamus', options: ['Kamus', 'Buku gambar', 'Buku tulis', 'Buku cerita', 'Penghapus'], type: 'Mochimono' },
+            
+            { q: 'おはようございます', a: 'Selamat pagi', options: ['Selamat pagi', 'Selamat siang', 'Selamat sore', 'Selamat malam', 'Terima kasih'], type: 'Aisatsu' },
+            { q: 'こんにちは', a: 'Selamat siang', options: ['Selamat pagi', 'Selamat siang', 'Selamat malam', 'Selamat tidur', 'Permisi'], type: 'Aisatsu' },
+            { q: 'こんばんは', a: 'Selamat malam', options: ['Selamat pagi', 'Selamat siang', 'Selamat malam', 'Selamat sore', 'Sampai jumpa'], type: 'Aisatsu' },
+            { q: 'さようなら', a: 'Sampai jumpa', options: ['Sampai jumpa', 'Terima kasih', 'Maaf', 'Selamat pagi', 'Permisi'], type: 'Aisatsu' },
+            { q: 'ありがとう', a: 'Terima kasih', options: ['Maaf', 'Terima kasih', 'Selamat datang', 'Permisi', 'Tolong'], type: 'Aisatsu' },
+            { q: 'すみません', a: 'Maaf / Permisi', options: ['Maaf / Permisi', 'Selamat pagi', 'Terima kasih', 'Sampai jumpa', 'Tolong'], type: 'Aisatsu' },
+            { q: 'いってきます', a: 'Saya berangkat', options: ['Selamat datang', 'Saya berangkat', 'Selamat malam', 'Permisi dulu', 'Terima kasih'], type: 'Aisatsu' },
+            { q: 'いらっしゃいませ', a: 'Selamat datang', options: ['Terima kasih', 'Selamat datang', 'Maaf', 'Sampai jumpa', 'Tolong'], type: 'Aisatsu' },
+            { q: 'おやすみなさい', a: 'Selamat malam (untuk tidur)', options: ['Selamat malam (untuk tidur)', 'Selamat datang', 'Selamat pagi', 'Maaf', 'Permisi'], type: 'Aisatsu' },
+            { q: 'はじめまして', a: 'Salam kenal', options: ['Selamat tidur', 'Permisi', 'Salam kenal', 'Selamat datang', 'Terima kasih'], type: 'Aisatsu' },
+
+            { q: 'いち', a: '1', options: ['1', '2', '3', '4', '5'], type: 'Kazu' },
+            { q: 'に', a: '2', options: ['3', '2', '1', '5', '6'], type: 'Kazu' },
+            { q: 'さん', a: '3', options: ['3', '4', '5', '6', '2'], type: 'Kazu' },
+            { q: 'よん', a: '4', options: ['2', '3', '4', '5', '6'], type: 'Kazu' },
+            { q: 'ご', a: '5', options: ['4', '5', '6', '7', '8'], type: 'Kazu' },
+            { q: 'ろく', a: '6', options: ['5', '6', '7', '8', '9'], type: 'Kazu' },
+            { q: 'なな', a: '7', options: ['7', '8', '9', '10', '6'], type: 'Kazu' },
+            { q: 'はち', a: '8', 'options': ['9', '8', '7', '6', '5'], type: 'Kazu' },
+            { q: 'きゅう', a: '9', options: ['8', '9', '7', '6', '5'], type: 'Kazu' },
+            { q: 'じゅう', a: '10', options: ['8', '9', '10', '11', '12'], type: 'Kazu' },
+            { q: 'ゼロ（ぜろ）', a: '0', options: ['1', '0', '5', '7', '10'], type: 'Kazu' },
+            { q: 'じゅういち', a: '11', options: ['10', '11', '12', '13', '14'], type: 'Kazu' },
+            { q: 'じゅうに', a: '12', options: ['10', '11', '12', '13', '14'], type: 'Kazu' },
+            { q: 'じゅうさん', a: '13', options: ['11', '12', '13', '14', '15'], type: 'Kazu' },
+            { q: 'にじゅう', a: '20', options: ['15', '18', '19', '20', '21'], type: 'Kazu' }
+        ];
+
+        // Variabel Global
+        let shuffledQuestions = [];
+        let currentQuestionIndex = 0;
+        let currentScore = 0;
+        let correctCount = 0;
+        let timerInterval;
+        const TIME_PER_QUESTION = 30; // 30 detik per soal
+        const SCORE_PER_QUESTION = 5; // 5 poin per soal
+        const RESTART_QUESTION_THRESHOLD = 30; // Batas soal ke-30 untuk cek skor minimal
+        const MIN_CORRECT_TO_PASS = 16; // Minimal 16 benar dari 30 soal pertama untuk lanjut
+
+        // Element DOM
+        const pages = ['login-page', 'assessment-page', 'result-page', 'scores-page'];
+        const elements = {
+            loginName: document.getElementById('student-name'),
+            loginNIS: document.getElementById('student-nis'),
+            loginButton: document.getElementById('start-assessment-button'),
+            loginError: document.getElementById('login-error'),
+            reloadMessage: document.getElementById('reload-message'),
+            qNum: document.getElementById('current-question-number'),
+            hiraganaWord: document.getElementById('hiragana-word'),
+            timerDisplay: document.getElementById('timer-display'),
+            timerBox: document.getElementById('timer-box'),
+            scoreDisplay: document.getElementById('current-score'),
+            correctDisplay: document.getElementById('total-correct'),
+            answerButtons: document.querySelectorAll('.answer-button'),
+            finalScore: document.getElementById('final-score-display'),
+            resultName: document.getElementById('result-name'),
+            resultNIS: document.getElementById('result-nis'),
+            resultCorrect: document.getElementById('result-correct-count'),
+            scoresTableBody: document.getElementById('scores-table-body'),
+            modalRedo: document.getElementById('modal-redo'),
+            modalRedoMessage: document.getElementById('modal-redo-message'),
+            modalRedoButton: document.getElementById('modal-redo-button'),
+        };
+
+        // Fungsi utilitas
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showPage(pageId) {
+            pages.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        // --- Logika Anti-Cheat & Sesi ---
+
+        // Anti-Cheat: Kembali ke login jika pindah tab
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && sessionStorage.getItem('isAssessmentActive') === 'true') {
+                resetAssessmentState();
+                sessionStorage.clear();
+                clearInterval(timerInterval);
+                elements.reloadMessage.classList.remove('hidden');
+                showPage('login-page');
+            }
+        });
+
+        function resetAssessmentState() {
+            currentQuestionIndex = 0;
+            currentScore = 0;
+            correctCount = 0;
+            clearInterval(timerInterval);
+            sessionStorage.removeItem('isAssessmentActive');
+            elements.timerDisplay.textContent = TIME_PER_QUESTION;
+            elements.timerBox.classList.remove('timer-red');
+        }
+
+        // --- Logika Ujian ---
+
+        function startAssessment() {
+            const name = elements.loginName.value.trim();
+            const nis = elements.loginNIS.value.trim();
+
+            if (!name || !nis) {
+                elements.loginError.textContent = 'Nama dan NIS harus diisi.';
+                elements.loginError.classList.remove('hidden');
+                return;
+            }
+            elements.loginError.classList.add('hidden');
+            elements.reloadMessage.classList.add('hidden');
+
+            // Simpan sesi
+            sessionStorage.setItem('userName', name);
+            sessionStorage.setItem('userNIS', nis);
+            sessionStorage.setItem('isAssessmentActive', 'true');
+
+            // Reset dan acak urutan soal
+            resetAssessmentState();
+            shuffledQuestions = [...QUESTIONS_DATA];
+            shuffleArray(shuffledQuestions);
+
+            showPage('assessment-page');
+            showNextQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            let timeLeft = TIME_PER_QUESTION;
+            elements.timerDisplay.textContent = timeLeft;
+            elements.timerBox.classList.remove('timer-red');
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                elements.timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 5) {
+                    elements.timerBox.classList.add('timer-red');
+                } else {
+                    elements.timerBox.classList.remove('timer-red');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Langsung pindah soal (dianggap salah/kosong)
+                    handleAnswer(null);
+                }
+            }, 1000);
+        }
+
+        function showNextQuestion() {
+            // Cek Re-do Logic (di akhir soal ke-30)
+            if (currentQuestionIndex === RESTART_QUESTION_THRESHOLD) {
+                if (correctCount < MIN_CORRECT_TO_PASS) {
+                    clearInterval(timerInterval);
+                    elements.modalRedo.classList.remove('hidden');
+                    elements.modalRedoMessage.textContent = `Anda baru menjawab benar ${correctCount} dari ${RESTART_QUESTION_THRESHOLD} soal pertama. Untuk melanjutkan ke soal 31-40, Anda harus benar minimal ${MIN_CORRECT_TO_PASS} soal. Silakan ulangi ujian dari awal.`;
+                    
+                    // Tombol untuk memulai ulang
+                    elements.modalRedoButton.onclick = () => {
+                        elements.modalRedo.classList.add('hidden');
+                        startAssessment(); // Memulai ulang total
+                    };
+                    return; // Hentikan proses pertanyaan berikutnya
+                }
+            }
+            
+            // Cek Ujian Selesai
+            if (currentQuestionIndex >= shuffledQuestions.length) {
+                endAssessment();
+                return;
+            }
+
+            const question = shuffledQuestions[currentQuestionIndex];
+            
+            // Tampilkan Soal
+            elements.qNum.textContent = currentQuestionIndex + 1;
+            elements.hiraganaWord.textContent = question.q.replace(/（[^）]*）/g, '').trim(); 
+            elements.scoreDisplay.textContent = currentScore;
+            elements.correctDisplay.textContent = correctCount;
+
+            // ACak Opsi Jawaban
+            let randomizedOptions = [...question.options];
+            shuffleArray(randomizedOptions);
+            
+            // Tampilkan Opsi Jawaban yang sudah diacak
+            elements.answerButtons.forEach((button, index) => {
+                const optionTextElement = button.querySelector('.option-text');
+                optionTextElement.textContent = randomizedOptions[index];
+                button.disabled = false;
+                button.classList.remove('bg-green-600', 'bg-red-600', 'bg-gray-400');
+                button.classList.add('bg-indigo-500');
+            });
+            
+            // Mulai Timer
+            startTimer();
+        }
+
+        function handleAnswer(selectedAnswer) {
+            clearInterval(timerInterval);
+            elements.timerBox.classList.remove('timer-red');
+            
+            const question = shuffledQuestions[currentQuestionIndex];
+            const isTimeout = selectedAnswer === null;
+            let isCorrect = false;
+            let selectedButton = null;
+
+            // Nonaktifkan semua tombol
+            elements.answerButtons.forEach(btn => btn.disabled = true);
+            
+            if (!isTimeout) {
+                // Cari tombol yang diklik berdasarkan data-answer (A, B, C, D, E)
+                selectedButton = Array.from(elements.answerButtons).find(b => b.dataset.answer === selectedAnswer);
+
+                if (selectedButton) {
+                    const selectedText = selectedButton.querySelector('.option-text').textContent;
+                    isCorrect = selectedText === question.a;
+
+                    // 1. Berikan visual feedback HANYA pada tombol yang dipilih
+                    selectedButton.classList.remove('bg-indigo-500');
+                    selectedButton.classList.add(isCorrect ? 'bg-green-600' : 'bg-red-600');
+                }
+            } else {
+                 // Jika Timeout, anggap salah
+                 isCorrect = false;
+            }
+
+            // TIDAK menampilkan jawaban benar jika salah/timeout (sesuai permintaan user)
+            
+            if (isCorrect) {
+                currentScore += SCORE_PER_QUESTION;
+                correctCount++;
+            }
+            
+            // Update skor di UI sebelum pindah
+            elements.scoreDisplay.textContent = currentScore;
+            elements.correctDisplay.textContent = correctCount;
+
+            // Lanjutkan ke soal berikutnya setelah jeda 1 detik
+            setTimeout(() => {
+                currentQuestionIndex++;
+                showNextQuestion();
+            }, 1000); 
+        }
+
+        function endAssessment() {
+            sessionStorage.removeItem('isAssessmentActive');
+
+            const name = sessionStorage.getItem('userName');
+            const nis = sessionStorage.getItem('userNIS');
+
+            // Simpan skor
+            saveScore(name, nis, currentScore, correctCount);
+
+            // Tampilkan Hasil
+            elements.finalScore.textContent = `${currentScore} / 200`;
+            elements.resultName.textContent = name;
+            elements.resultNIS.textContent = nis;
+            elements.resultCorrect.textContent = correctCount;
+            
+            showPage('result-page');
+            // Bersihkan sesi
+            sessionStorage.clear();
+        }
+
+        // Listener Jawaban: Menggunakan event.currentTarget untuk mendapatkan data dari tombol
+        elements.answerButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                handleAnswer(event.currentTarget.dataset.answer);
+            });
+        });
+
+        // Listener Login
+        elements.loginButton.addEventListener('click', startAssessment);
+
+
+        // --- Logika Penyimpanan dan Riwayat Skor ---
+
+        function saveScore(name, nis, score, correct) {
+            const scores = JSON.parse(localStorage.getItem('nihongoScores')) || [];
+            const date = new Date().toLocaleDateString('id-ID', {
+                year: 'numeric', month: 'long', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            scores.push({ name: name, nis: nis, score: score, correct: correct, date });
+            localStorage.setItem('nihongoScores', JSON.stringify(scores));
+        }
+
+        window.showScoresPage = function() {
+            const scores = JSON.parse(localStorage.getItem('nihongoScores')) || [];
+            elements.scoresTableBody.innerHTML = '';
+            
+            if (scores.length > 0) {
+                // Sortir dari yang terbaru
+                scores.sort((a, b) => new Date(b.date) - new Date(a.date)); 
+                scores.forEach(entry => {
+                    const row = document.createElement('tr');
+                    const color = entry.score >= 160 ? 'text-green-600' : entry.score >= 120 ? 'text-yellow-600' : 'text-red-600';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.name} (${entry.nis})</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-bold ${color}">${entry.score}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.date}</td>
+                    `;
+                    elements.scoresTableBody.appendChild(row);
+                });
+            } else {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="3" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Belum ada riwayat ujian yang tercatat.</td>`;
+                elements.scoresTableBody.appendChild(row);
+            }
+            
+            showPage('scores-page');
+        }
+
+        // Inisialisasi: Cek sesi dan tampilkan halaman login
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('isAssessmentActive') === 'true') {
+                // Jika ada sesi aktif yang belum selesai, paksa kembali ke login (karena reload atau error)
+                resetAssessmentState();
+                sessionStorage.clear();
+                elements.reloadMessage.classList.remove('hidden');
+            }
+            showPage('login-page');
+        });
+    </script>
+</body>
+</html>
