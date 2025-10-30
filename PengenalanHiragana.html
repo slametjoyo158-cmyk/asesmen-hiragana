@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesmen Pengenalan Hiragana</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        /* Kelas untuk menu yang aktif */
+        .card-menu {
+            @apply transition-all duration-300 transform hover:scale-105;
+        }
+        .card-menu:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        /* Kelas untuk menu yang dinonaktifkan */
+        .card-disabled {
+            @apply opacity-50 cursor-not-allowed pointer-events-none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="container mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Asesmen Pengenalan Hiragana</h1>
+            <p class="text-gray-600 mt-1">Uji kemampuan Anda dalam mengenali dan memahami Hiragana.</p>
+        </header>
+
+        <!-- Halaman Login -->
+        <div id="login" class="page card mx-auto max-w-sm">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-blue-600">Selamat Datang</h2>
+            <input type="text" id="username" placeholder="Masukkan Nama Anda" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
+            <button id="loginButton" class="w-full bg-blue-600 text-white font-semibold p-3 rounded-lg hover:bg-blue-700 transition duration-200">Mulai Asesmen</button>
+            <p id="loginError" class="text-red-500 mt-3 text-center hidden"></p>
+        </div>
+
+        <!-- Halaman Beranda (Menu Asesmen) -->
+        <div id="home" class="page hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Pilih Bagian Asesmen</h2>
+                <div class="flex space-x-4">
+                    <button onclick="showScores()" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200">Riwayat Skor</button>
+                    <button onclick="logout()" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200">Keluar</button>
+                </div>
+            </div>
+            
+            <p class="text-lg mb-6 text-gray-700">Halo, <span id="welcome-user" class="font-bold text-blue-600"></span>! Pilih bagian asesmen di bawah ini:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Bagian 1 -->
+                <div class="card card-menu bg-blue-500 text-white cursor-pointer" onclick="startAssessment('Asesmen Bagian 1', 10, 'Konsonan')">
+                    <h3 class="text-xl font-semibold mb-2">1. Asesmen Bagian 1</h3>
+                    <p>Menguji pengenalan 10 huruf Hiragana (Konsonan).</p>
+                </div>
+                <!-- Bagian 2 -->
+                <div class="card card-menu bg-green-500 text-white cursor-pointer" onclick="startAssessment('Asesmen Bagian 2', 10, 'Vokal')">
+                    <h3 class="text-xl font-semibold mb-2">2. Asesmen Bagian 2</h3>
+                    <p>Menguji pengenalan 10 huruf Hiragana (Vokal).</p>
+                </div>
+                <!-- Bagian 3 -->
+                <div class="card card-menu bg-yellow-500 text-white cursor-pointer" onclick="startAssessment('Asesmen Bagian 3', 10, 'Campuran 1')">
+                    <h3 class="text-xl font-semibold mb-2">3. Asesmen Bagian 3</h3>
+                    <p>Menguji 20 huruf Hiragana campuran dari Bagian 1 & 2.</p>
+                </div>
+                <!-- Bagian 4 -->
+                <div class="card card-menu bg-indigo-500 text-white cursor-pointer" onclick="startAssessment('Asesmen Bagian 4', 10, 'Tenten/Maru')">
+                    <h3 class="text-xl font-semibold mb-2">4. Asesmen Bagian 4</h3>
+                    <p>Menguji huruf Hiragana dengan Tenten dan Maru.</p>
+                </div>
+                <!-- Bagian 5 -->
+                <div class="card card-menu bg-pink-500 text-white cursor-pointer" onclick="startAssessment('Asesmen Bagian 5', 10, 'Kombinasi')">
+                    <h3 class="text-xl font-semibold mb-2">5. Asesmen Bagian 5</h3>
+                    <p>Menguji kombinasi dasar Hiragana.</p>
+                </div>
+                <!-- Bagian 6 - Target Modifikasi -->
+                <div id="menu-bagian-6" class="card bg-purple-500 text-white card-disabled">
+                    <h3 class="text-xl font-semibold mb-2">6. Asesmen Bagian 6</h3>
+                    <p>Menguji kombinasi Hiragana tingkat lanjut.</p>
+                    <span id="lock-status" class="text-xs mt-2 block font-medium text-red-200"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Halaman Asesmen -->
+        <div id="assessment" class="page hidden card mx-auto">
+            <h2 id="assessment-title" class="text-2xl font-semibold mb-6 text-center text-gray-800"></h2>
+            <div class="text-center mb-4 p-4 border border-gray-200 rounded-lg">
+                <span id="hiragana-char" class="text-7xl font-bold text-blue-600"></span>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <button class="answer-button bg-gray-200 text-gray-800 font-semibold p-4 rounded-lg hover:bg-gray-300 transition duration-200" data-answer=""></button>
+                <button class="answer-button bg-gray-200 text-gray-800 font-semibold p-4 rounded-lg hover:bg-gray-300 transition duration-200" data-answer=""></button>
+                <button class="answer-button bg-gray-200 text-gray-800 font-semibold p-4 rounded-lg hover:bg-gray-300 transition duration-200" data-answer=""></button>
+                <button class="answer-button bg-gray-200 text-gray-800 font-semibold p-4 rounded-lg hover:bg-gray-300 transition duration-200" data-answer=""></button>
+            </div>
+            <p id="feedback" class="text-center mt-4 font-semibold"></p>
+            <p class="mt-6 text-center text-sm text-gray-500">
+                Soal <span id="current-question">1</span> dari <span id="total-questions">10</span> | Skor: <span id="score">0</span>
+            </p>
+        </div>
+
+        <!-- Halaman Hasil -->
+        <div id="result" class="page hidden card mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-4 text-blue-600">Asesmen Selesai!</h2>
+            <p class="text-lg text-gray-700 mb-2">Skor Akhir Anda:</p>
+            <p id="final-score" class="text-6xl font-extrabold text-green-500 mb-6"></p>
+            <p id="summary" class="text-md text-gray-600 mb-8"></p>
+            <button onclick="showPage('home')" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200">Kembali ke Beranda</button>
+        </div>
+
+        <!-- Halaman Skor -->
+        <div id="scores" class="page hidden card mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Riwayat Skor Asesmen</h2>
+                <button onclick="showPage('home')" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">Kembali</button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asesmen</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scores-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Data skor akan dimasukkan di sini oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginButton = document.getElementById('loginButton');
+            const usernameInput = document.getElementById('username');
+            const loginError = document.getElementById('loginError');
+            const welcomeUser = document.getElementById('welcome-user');
+            const hiraganaChar = document.getElementById('hiragana-char');
+            const answerButtons = document.querySelectorAll('.answer-button');
+            const assessmentTitle = document.getElementById('assessment-title');
+            const feedbackElement = document.getElementById('feedback');
+            const currentQuestionSpan = document.getElementById('current-question');
+            const totalQuestionsSpan = document.getElementById('total-questions');
+            const scoreSpan = document.getElementById('score');
+            const finalScoreElement = document.getElementById('final-score');
+            const summaryElement = document.getElementById('summary');
+            const scoresTableBody = document.getElementById('scores-table-body');
+            
+            // Variabel state global
+            let currentAssessment = {};
+            let currentQuestionIndex = 0;
+            let currentScore = 0;
+            let assessmentData = [];
+
+            // Daftar Hiragana yang akan digunakan
+            // Ini adalah daftar singkat untuk keperluan demonstrasi
+            const hiraganaMap = {
+                'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+                'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+                'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so',
+                'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to',
+                'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
+                'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
+                'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
+                'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
+                'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
+                'わ': 'wa', 'を': 'wo', 'ん': 'n',
+                'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
+                'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
+                'だ': 'da', 'ぢ': 'ji', 'づ': 'zu', 'で': 'de', 'ど': 'do',
+                'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo',
+                'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po',
+                'きゃ': 'kya', 'きゅ': 'kyu', 'きょ': 'kyo',
+                'しゃ': 'sha', 'しゅ': 'shu', 'しょ': 'sho',
+                'ちゃ': 'cha', 'ちゅ': 'chu', 'ちょ': 'cho',
+                'にゃ': 'nya', 'にゅ': 'nyu', 'にょ': 'nyo',
+                'ひゃ': 'hya', 'ひゅ': 'hyu', 'ひょ': 'hyo',
+                'みゃ': 'mya', 'みゅ': 'myu', 'みょ': 'myo',
+                'りゃ': 'rya', 'りゅ': 'ryu', 'りょ': 'ryo',
+                'ぎゃ': 'gya', 'ぎゅ': 'gyu', 'ぎょ': 'gyo',
+                'じゃ': 'ja', 'じゅ': 'ju', 'じょ': 'jo',
+                'ぢゃ': 'ja', 'ぢゅ': 'ju', 'ぢょ': 'jo',
+                'びゃ': 'bya', 'びゅ': 'byu', 'びょ': 'byo',
+                'ぴゃ': 'pya', 'ぴゅ': 'pyu', 'ぴょ': 'pyo'
+            };
+            
+            const categoryMap = {
+                'Konsonan': ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'],
+                'Vokal': ['あ', 'い', 'う', 'え', 'お', 'た', 'ち', 'つ', 'て', 'と'],
+                'Campuran 1': ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'].sort(() => 0.5 - Math.random()).slice(0, 10),
+                'Tenten/Maru': ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ', 'ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'],
+                'Kombinasi': ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ', 'にゃ', 'にゅ', 'にょ'],
+                'Kombinasi Tingkat Lanjut': ['ひゃ', 'ひゅ', 'ひょ', 'みゃ', 'みゅ', 'みょ', 'りゃ', 'りゅ', 'りょ', 'ぎゃ', 'ぎゅ', 'ぎょ', 'じゃ', 'じゅ', 'じょ', 'びゃ', 'びゅ', 'びょ', 'ぴゃ', 'ぴゅ', 'ぴょ']
+            };
+
+            // Fungsi untuk menampilkan halaman yang sesuai
+            window.showPage = function(pageId) {
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.add('hidden');
+                });
+                document.getElementById(pageId).classList.remove('hidden');
+
+                if (pageId === 'home') {
+                    checkMenuStatus(); // Panggil cek status menu saat ke halaman home
+                }
+            }
+
+            // Fungsi Login
+            loginButton.addEventListener('click', () => {
+                const username = usernameInput.value.trim();
+                if (username) {
+                    sessionStorage.setItem('loggedInUser', username);
+                    welcomeUser.textContent = username;
+                    showPage('home');
+                } else {
+                    loginError.textContent = 'Nama tidak boleh kosong.';
+                    loginError.classList.remove('hidden');
+                }
+            });
+
+            // Fungsi Logout
+            window.logout = function() {
+                sessionStorage.removeItem('loggedInUser');
+                showPage('login');
+                usernameInput.value = '';
+                loginError.classList.add('hidden');
+            }
+
+            // --- Fungsi Baru untuk Logika Penguncian Menu Bagian 6 ---
+
+            // Fungsi untuk mendapatkan skor tertinggi dari suatu asesmen
+            function getHighestScore(title, scores) {
+                const relevantScores = scores.filter(s => s.title === title);
+                if (relevantScores.length === 0) return 0;
+                // Ambil nilai skor tertinggi
+                return Math.max(...relevantScores.map(s => s.score));
+            }
+
+            // Fungsi untuk memeriksa dan mengatur status menu Bagian 6
+            function checkMenuStatus() {
+                const scores = JSON.parse(localStorage.getItem('hiraganaScores')) || [];
+                const scoreBagian1 = getHighestScore('Asesmen Bagian 1', scores);
+                const scoreBagian2 = getHighestScore('Asesmen Bagian 2', scores);
+
+                const menuBagian6 = document.getElementById('menu-bagian-6');
+                const lockStatus = document.getElementById('lock-status');
+                
+                if (!menuBagian6 || !lockStatus) return; // Safety check
+
+                menuBagian6.onclick = null; // Reset onclick
+                menuBagian6.classList.remove('card-menu', 'bg-blue-500', 'bg-green-500', 'bg-yellow-600', 'bg-red-500');
+                lockStatus.classList.remove('text-green-200', 'text-yellow-200', 'text-red-200');
+
+                // Kriteria: ENABLE (Minimal 90 di B1 dan B2)
+                if (scoreBagian1 >= 90 && scoreBagian2 >= 90) {
+                    // ENABLE logic
+                    menuBagian6.classList.remove('card-disabled', 'opacity-50', 'cursor-not-allowed');
+                    menuBagian6.classList.add('card-menu', 'bg-purple-500', 'cursor-pointer');
+                    menuBagian6.onclick = () => startAssessment('Asesmen Bagian 6', 10, 'Kombinasi Tingkat Lanjut');
+                    lockStatus.textContent = 'Akses Dibuka (Skor B1: ' + scoreBagian1 + ', B2: ' + scoreBagian2 + ')';
+                    lockStatus.classList.add('text-green-200');
+
+                } 
+                // Kriteria: DISABLE (Jika B1 dan B2 masih di bawah 85)
+                else if (scoreBagian1 < 85 && scoreBagian2 < 85) {
+                    // DISABLE (Locked) logic - Kunci total
+                    menuBagian6.classList.add('card-disabled', 'opacity-50', 'cursor-not-allowed', 'bg-red-500');
+                    lockStatus.textContent = 'Terkunci: Dapatkan skor min. 90 di Bagian 1 DAN Bagian 2 untuk membuka. (Skor B1: ' + scoreBagian1 + ', B2: ' + scoreBagian2 + ')';
+                    lockStatus.classList.add('text-red-200');
+                } 
+                // Kriteria: WAITING (Di luar kriteria di atas, misalnya salah satu 88 dan lainnya 92)
+                else {
+                    // Waiting/Neutral logic - Belum memenuhi syarat 90, tapi sudah di atas 85
+                    menuBagian6.classList.add('card-disabled', 'opacity-75', 'cursor-not-allowed', 'bg-yellow-600');
+                    lockStatus.textContent = 'Menunggu: Lanjutkan latihan. Dapatkan skor min. 90 di Bagian 1 DAN Bagian 2 untuk membuka. (Skor B1: ' + scoreBagian1 + ', B2: ' + scoreBagian2 + ')';
+                    lockStatus.classList.add('text-yellow-200');
+                }
+            }
+
+            // --- Fungsi Asesmen yang Sudah Ada (Penyesuaian nama dan integrasi) ---
+
+            // Fungsi untuk memulai asesmen
+            window.startAssessment = function(title, total, category) {
+                currentAssessment = { title, total, category };
+                assessmentTitle.textContent = title;
+                totalQuestionsSpan.textContent = total;
+                currentQuestionIndex = 0;
+                currentScore = 0;
+                assessmentData = []; // Clear previous data
+                
+                // Ambil set Hiragana sesuai kategori, dan acak
+                const chars = categoryMap[category] || Object.keys(hiraganaMap);
+                const shuffledChars = chars.sort(() => 0.5 - Math.random()).slice(0, total);
+
+                for (let i = 0; i < total; i++) {
+                    const correctChar = shuffledChars[i];
+                    const correctAnswer = hiraganaMap[correctChar];
+                    
+                    // Buat 3 opsi jawaban salah
+                    let allRomaji = Object.values(hiraganaMap);
+                    let wrongAnswers = [];
+                    // Filter jawaban yang sama dan ambil 3 secara acak
+                    let filteredWrong = allRomaji.filter(r => r !== correctAnswer).sort(() => 0.5 - Math.random()).slice(0, 3);
+                    
+                    assessmentData.push({
+                        char: correctChar,
+                        correctAnswer: correctAnswer,
+                        options: [correctAnswer, ...filteredWrong].sort(() => 0.5 - Math.random()) // Acak opsi
+                    });
+                }
+
+                showNextQuestion();
+                showPage('assessment');
+            }
+
+            // Fungsi untuk menampilkan pertanyaan berikutnya
+            function showNextQuestion() {
+                if (currentQuestionIndex < currentAssessment.total) {
+                    const question = assessmentData[currentQuestionIndex];
+                    
+                    hiraganaChar.textContent = question.char;
+                    currentQuestionSpan.textContent = currentQuestionIndex + 1;
+                    scoreSpan.textContent = currentScore;
+                    feedbackElement.textContent = '';
+                    
+                    // Tampilkan opsi jawaban
+                    answerButtons.forEach((button, index) => {
+                        button.textContent = question.options[index];
+                        button.dataset.answer = question.options[index];
+                        button.disabled = false;
+                        button.classList.remove('bg-red-500', 'bg-green-500', 'text-white');
+                        button.classList.add('bg-gray-200', 'text-gray-800');
+                    });
+                } else {
+                    endAssessment();
+                }
+            }
+
+            // Logika jawaban
+            answerButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const selectedAnswer = event.target.dataset.answer;
+                    const question = assessmentData[currentQuestionIndex];
+                    const isCorrect = selectedAnswer === question.correctAnswer;
+
+                    // Nonaktifkan semua tombol setelah menjawab
+                    answerButtons.forEach(btn => btn.disabled = true);
+
+                    if (isCorrect) {
+                        currentScore += 10; // Setiap jawaban benar bernilai 10 poin
+                        feedbackElement.textContent = 'BENAR!';
+                        feedbackElement.classList.remove('text-red-500');
+                        feedbackElement.classList.add('text-green-500');
+                        event.target.classList.remove('bg-gray-200', 'text-gray-800');
+                        event.target.classList.add('bg-green-500', 'text-white');
+                    } else {
+                        feedbackElement.textContent = `SALAH! Jawaban yang benar adalah: ${question.correctAnswer}`;
+                        feedbackElement.classList.remove('text-green-500');
+                        feedbackElement.classList.add('text-red-500');
+                        event.target.classList.remove('bg-gray-200', 'text-gray-800');
+                        event.target.classList.add('bg-red-500', 'text-white');
+
+                        // Highlight jawaban yang benar
+                        document.querySelector(`[data-answer="${question.correctAnswer}"]`).classList.add('bg-green-500', 'text-white');
+                        document.querySelector(`[data-answer="${question.correctAnswer}"]`).classList.remove('bg-gray-200', 'text-gray-800');
+                    }
+
+                    // Lanjutkan ke pertanyaan berikutnya setelah jeda
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        showNextQuestion();
+                    }, 1500);
+                });
+            });
+
+            // Fungsi untuk mengakhiri asesmen
+            function endAssessment() {
+                const finalScore = (currentScore / (currentAssessment.total * 10)) * 100;
+                const scoreTitle = currentAssessment.title;
+                
+                finalScoreElement.textContent = `${finalScore}%`;
+                summaryElement.innerHTML = `Anda menjawab benar ${currentScore / 10} dari ${currentAssessment.total} soal.`;
+
+                saveScore(scoreTitle, finalScore);
+                showPage('result');
+            }
+
+            // Fungsi untuk menyimpan skor ke localStorage
+            function saveScore(title, finalScore) {
+                const scores = JSON.parse(localStorage.getItem('hiraganaScores')) || [];
+                const date = new Date().toLocaleDateString('id-ID', {
+                    year: 'numeric', month: 'long', day: 'numeric', 
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                scores.push({ title: title, score: finalScore, date });
+                localStorage.setItem('hiraganaScores', JSON.stringify(scores));
+                
+                // Setelah menyimpan skor, cek kembali status menu
+                checkMenuStatus();
+            }
+
+            // Fungsi untuk menampilkan riwayat skor
+            window.showScores = function() {
+                const scores = JSON.parse(localStorage.getItem('hiraganaScores')) || [];
+                scoresTableBody.innerHTML = '';
+                
+                if (scores.length > 0) {
+                    scores.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sortir dari yang terbaru
+                    scores.forEach(entry => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap">${entry.title}</td><td class="px-6 py-4 whitespace-nowrap font-bold ${entry.score >= 90 ? 'text-green-600' : entry.score >= 85 ? 'text-yellow-600' : 'text-red-600'}">${entry.score}%</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.date}</td>`;
+                        scoresTableBody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="3" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Belum ada skor yang tercatat.</td>`;
+                    scoresTableBody.appendChild(row);
+                }
+                
+                showPage('scores');
+            }
+
+            // Cek status login saat halaman dimuat
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                welcomeUser.textContent = loggedInUser;
+                showPage('home');
+                checkMenuStatus(); // Panggil saat memuat home pertama kali
+            } else {
+                showPage('login');
+            }
+        });
+    </script>
+</body>
+</html>
