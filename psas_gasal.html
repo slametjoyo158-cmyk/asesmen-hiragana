@@ -93,7 +93,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                Sesi Anda berakhir karena berpindah tab. Silakan masuk kembali.
+                Sesi Anda berakhir karena berpindah tab atau jendela. Silakan masuk kembali.
             </p>
             <label for="student-name" class="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
             <input type="text" id="student-name" placeholder="Contoh: Budi Santoso" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
@@ -190,7 +190,7 @@
     </div>
 
     <script>
-        // Data Soal
+        // Data Soal (Dibiarkan sama seperti aslinya)
         const QUESTIONS_DATA = [
             { q: 'えんぴつ', a: 'Pensil', options: ['Buku', 'Penghapus', 'Pensil', 'Tas', 'Pulpen'], type: 'Mochimono' },
             { q: 'けしごむ', a: 'Penghapus', options: ['Penggaris', 'Penghapus', 'Buku catatan', 'Meja', 'Tas'], type: 'Mochimono' },
@@ -280,25 +280,12 @@
             }
         }
 
-        function showPage(pageId) {
+        window.showPage = function(pageId) {
             pages.forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(pageId).classList.remove('hidden');
         }
-
-        // --- Logika Anti-Cheat & Sesi ---
-
-        // Anti-Cheat: Kembali ke login jika pindah tab
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && sessionStorage.getItem('isAssessmentActive') === 'true') {
-                resetAssessmentState();
-                sessionStorage.clear();
-                clearInterval(timerInterval);
-                elements.reloadMessage.classList.remove('hidden');
-                showPage('login-page');
-            }
-        });
 
         function resetAssessmentState() {
             currentQuestionIndex = 0;
@@ -309,6 +296,43 @@
             elements.timerDisplay.textContent = TIME_PER_QUESTION;
             elements.timerBox.classList.remove('timer-red');
         }
+
+
+        // --- Logika Anti-Cheat & Sesi (Perbaikan Agresif) ---
+
+        // FUNGSI PERBAIKAN: Fungsi untuk mereset sesi dan melakukan hard-reload
+        function triggerReloadToLogin() {
+            // HANYA LAKUKAN RELOAD JIKA PENGGUNA SEDANG BERADA DI HALAMAN UJIAN (assessment-page)
+            // Cek kondisi visible pada UI, bukan hanya sessionStorage.
+            if (document.getElementById('assessment-page').classList.contains('hidden')) {
+                return; 
+            }
+            
+            // 1. Matikan timer
+            clearInterval(timerInterval);
+            // 2. Hapus semua data sesi (penting)
+            sessionStorage.clear();
+            // 3. Tambahkan pesan peringatan di localStorage agar muncul setelah reload
+            localStorage.setItem('sessionExpired', 'true');
+            
+            // 4. Lakukan hard reload untuk memastikan semua state JavaScript hilang dan kembali ke kondisi awal
+            window.location.reload(); 
+        }
+
+        // Anti-Cheat 1: Kembali ke login jika pindah tab/minimalkan (Visibility Change)
+        document.addEventListener('visibilitychange', () => {
+            // Periksa apakah dokumen tidak terlihat (pindah tab atau minimalkan)
+            if (document.hidden) {
+                triggerReloadToLogin();
+            }
+        });
+
+        // Anti-Cheat 2: Kembali ke login jika kehilangan fokus (Pindah Jendela/Aplikasi)
+        // Ini adalah penambahan yang harusnya lebih efektif untuk mengcover pindah jendela.
+        window.addEventListener('blur', () => {
+            triggerReloadToLogin();
+        });
+
 
         // --- Logika Ujian ---
 
@@ -327,7 +351,7 @@
             // Simpan sesi
             sessionStorage.setItem('userName', name);
             sessionStorage.setItem('userNIS', nis);
-            sessionStorage.setItem('isAssessmentActive', 'true');
+            sessionStorage.setItem('isAssessmentActive', 'true'); // Tanda bahwa ujian sedang berjalan
 
             // Reset dan acak urutan soal
             resetAssessmentState();
@@ -527,14 +551,24 @@
             showPage('scores-page');
         }
 
-        // Inisialisasi: Cek sesi dan tampilkan halaman login
+        // Inisialisasi: Cek sesi, tampilkan halaman login, dan cek pesan kadaluarsa
         document.addEventListener('DOMContentLoaded', () => {
+            // Cek apakah ada sesi yang kadaluarsa setelah reload dari anti-cheat
+            if (localStorage.getItem('sessionExpired') === 'true') {
+                elements.reloadMessage.classList.remove('hidden');
+                localStorage.removeItem('sessionExpired'); // Hapus pesan agar tidak muncul lagi
+            }
+
+            // PENTING: Cek dan bersihkan sesi 'isAssessmentActive' yang terpotong (misal, karena user me-reload manual)
             if (sessionStorage.getItem('isAssessmentActive') === 'true') {
-                // Jika ada sesi aktif yang belum selesai, paksa kembali ke login (karena reload atau error)
                 resetAssessmentState();
                 sessionStorage.clear();
-                elements.reloadMessage.classList.remove('hidden');
+                // Tampilkan pesan peringatan jika belum ditampilkan oleh localStorage/reload
+                if (elements.reloadMessage.classList.contains('hidden')) {
+                    elements.reloadMessage.classList.remove('hidden');
+                }
             }
+            
             showPage('login-page');
         });
     </script>
