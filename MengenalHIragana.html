@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesmen Hiragana Berbasis Web</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Inter sebagai standar */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* Style untuk tombol opsi */
+        .option-button {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .option-button:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        /* Style untuk karakter Hiragana besar */
+        .hiragana-char {
+            font-size: 6rem; /* Ukuran besar untuk Hiragana */
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1;
+        }
+        /* Animasi Timer Bar */
+        @keyframes timer {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+        .timer-bar {
+            animation-name: timer;
+            animation-timing-function: linear;
+        }
+        .disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Kontainer Utama Aplikasi -->
+    <div id="app" class="flex flex-col flex-grow items-center justify-center p-4">
+        <!-- Konten akan dimuat di sini oleh JavaScript -->
+    </div>
+
+    <script>
+        // --- KONFIGURASI DAN DATA SOAL ---
+        const soalData = [
+            { char: 'あ', reading: 'a' }, { char: 'い', reading: 'i' }, { char: 'う', reading: 'u' }, { char: 'え', reading: 'e' }, { char: 'お', reading: 'o' },
+            { char: 'か', reading: 'ka' }, { char: 'き', reading: 'ki' }, { char: 'く', reading: 'ku' }, { char: 'け', reading: 'ke' }, { char: 'こ', reading: 'ko' },
+            { char: 'さ', reading: 'sa' }, { char: 'し', reading: 'shi' }, { char: 'す', reading: 'su' }, { char: 'せ', reading: 'se' }, { char: 'そ', reading: 'so' },
+            { char: 'た', reading: 'ta' }, { char: 'ち', reading: 'chi' }, { char: 'つ', reading: 'tsu' }, { char: 'て', reading: 'te' }, { char: 'と', reading: 'to' },
+            { char: 'な', reading: 'na' }, { char: 'に', reading: 'ni' }, { char: 'ぬ', reading: 'nu' }, { char: 'ね', 'reading': 'ne' }, { char: 'の', 'reading': 'no' },
+            { char: 'は', reading: 'ha' }, { char: 'ひ', reading: 'hi' }, { char: 'ふ', reading: 'fu' }, { char: 'へ', reading: 'he' }, { char: 'ほ', reading: 'ho' }
+        ];
+
+        const TOTAL_SOAL = 30;
+        const WAKTU_PER_SOAL = 30; // Detik
+        const PASSWORD_DEFAULT = '123456';
+
+        // --- STATE APLIKASI ---
+        let state = {
+            nis: null,
+            halaman: 'login', // 'login', 'quiz', 'result', 'cheating'
+            soalSaatIni: 0,
+            skor: 0,
+            jawabanDipilih: null,
+            soalQuiz: [],
+            timerInterval: null,
+            timerTimeout: null,
+            waktuSisa: WAKTU_PER_SOAL,
+            isCheating: false, // Flag untuk deteksi pindah tab
+            isJawabanDiberi: false // Flag untuk status jawaban
+        };
+
+        // --- FUNGSI UTILITAS ---
+
+        // Fungsi untuk mengacak array (Fisher-Yates)
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Fungsi untuk membuat 5 opsi jawaban, 1 benar dan 4 pengecoh
+        function generateOptions(correctReading) {
+            const allReadings = soalData.map(d => d.reading).filter(r => r !== correctReading);
+            // Ambil 4 pengecoh acak yang unik
+            let incorrectOptions = shuffle(allReadings).slice(0, 4);
+            let options = shuffle([correctReading, ...incorrectOptions]);
+
+            // Mapping opsi ke label A, B, C, D, E (sebagai angka 1-5 di UI)
+            const optionLabels = ['A', 'B', 'C', 'D', 'E'];
+            return options.map((value, index) => ({
+                label: optionLabels[index],
+                display: value, // Tampilkan bacaan Hiragana di tombol
+                value: value
+            }));
+        }
+
+        // Fungsi untuk menginisialisasi soal ujian
+        function initializeQuiz() {
+            // Acak urutan 30 soal
+            const shuffledSoal = shuffle([...soalData]).slice(0, TOTAL_SOAL);
+            state.soalQuiz = shuffledSoal.map(soal => ({
+                ...soal,
+                options: generateOptions(soal.reading),
+                isAnswered: false,
+                userAnswer: null
+            }));
+            state.skor = 0;
+            state.soalSaatIni = 0;
+            state.jawabanDipilih = null;
+            state.isJawabanDiberi = false;
+        }
+
+        // --- RENDER UI ---
+
+        const appDiv = document.getElementById('app');
+
+        // Fungsi untuk merender komponen tertentu
+        function render() {
+            appDiv.innerHTML = '';
+            // Render Header (hanya saat halaman quiz atau result)
+            if (state.halaman === 'quiz' || state.halaman === 'result') {
+                renderHeader();
+            }
+
+            // Render konten utama berdasarkan state.halaman
+            if (state.halaman === 'login') {
+                renderLogin();
+            } else if (state.halaman === 'quiz') {
+                renderQuiz();
+            } else if (state.halaman === 'result') {
+                renderResult();
+            } else if (state.halaman === 'cheating') {
+                renderCheatingWarning();
+            }
+        }
+
+        // Render Header Skor dan Progress
+        function renderHeader() {
+            const header = document.createElement('header');
+            header.className = 'w-full max-w-4xl fixed top-0 left-1/2 transform -translate-x-1/2 bg-white shadow-lg p-4 rounded-b-xl z-10';
+            header.innerHTML = `
+                <div class="flex justify-between items-center text-gray-700 font-semibold">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-lg">NIS: ${state.nis}</span>
+                        <span class="text-lg">Soal: ${state.soalSaatIni + 1}/${TOTAL_SOAL}</span>
+                    </div>
+                    <div class="text-2xl text-green-600">
+                        Skor Benar: ${state.skor}
+                    </div>
+                </div>
+                ${state.halaman === 'quiz' ? `
+                    <div class="mt-3">
+                        <div id="timer-bar-container" class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div id="timer-bar" class="h-full bg-red-500 rounded-full timer-bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            document.body.prepend(header);
+        }
+
+        // Render Halaman Login
+        function renderLogin() {
+            const loginCard = document.createElement('div');
+            loginCard.className = 'w-full max-w-md bg-white p-8 shadow-2xl rounded-xl transition duration-500 ease-in-out transform hover:scale-[1.02]';
+            loginCard.innerHTML = `
+                <h1 class="text-3xl font-bold text-center text-indigo-600 mb-6">Asesmen Hiragana</h1>
+                <p class="text-center text-gray-500 mb-8">Silakan masuk dengan NIS Anda untuk memulai ujian. Password default: <span class="font-mono bg-gray-100 px-2 py-1 rounded">123456</span></p>
+
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label for="nis" class="block text-sm font-medium text-gray-700">Nomor Induk Siswa (NIS)</label>
+                        <input type="text" id="nis" name="nis" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Masukkan NIS Anda">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="password" name="password" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Password (default: 123456)">
+                    </div>
+                    <div id="login-error" class="text-red-500 text-sm hidden"></div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                        Mulai Asesmen
+                    </button>
+                </form>
+            `;
+            appDiv.appendChild(loginCard);
+
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+        }
+
+        // Render Halaman Quiz
+        function renderQuiz() {
+            const currentSoalIndex = state.soalSaatIni;
+            const soal = state.soalQuiz[currentSoalIndex];
+
+            // Tambahkan padding atas untuk mengimbangi fixed header
+            appDiv.className = 'flex flex-col flex-grow items-center justify-center p-4 pt-32';
+
+            const quizCard = document.createElement('div');
+            quizCard.className = 'w-full max-w-4xl bg-white p-8 shadow-2xl rounded-xl';
+            quizCard.innerHTML = `
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Soal ke ${currentSoalIndex + 1} dari ${TOTAL_SOAL}</h2>
+
+                <!-- Area Hiragana -->
+                <div class="text-center py-10 bg-indigo-50 rounded-lg mb-8 shadow-inner">
+                    <div class="hiragana-char text-indigo-700">${soal.char}</div>
+                    <p class="text-lg text-gray-600 mt-2">Pilih bacaan yang benar:</p>
+                </div>
+
+                <!-- Opsi Jawaban -->
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${soal.options.map(option => `
+                        <button 
+                            data-value="${option.value}"
+                            class="option-button w-full flex items-center p-4 border-2 border-gray-300 rounded-xl text-left bg-gray-50 hover:bg-indigo-100 transition duration-150 ease-in-out ${state.isJawabanDiberi ? 'disabled' : ''}"
+                            ${state.isJawabanDiberi ? 'disabled' : ''}
+                        >
+                            <span class="text-xl font-bold w-8 text-center">${option.label}.</span>
+                            <span class="ml-4 text-2xl font-medium">${option.display}</span>
+                        </button>
+                    `).join('')}
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="mt-8"></div>
+            `;
+            appDiv.appendChild(quizCard);
+
+            // Tambahkan event listener untuk opsi jawaban
+            document.querySelectorAll('#options-container button').forEach(button => {
+                button.addEventListener('click', handleAnswer);
+            });
+
+            // Mulai Timer
+            startTimer();
+        }
+
+        // Render Halaman Hasil
+        function renderResult() {
+            // Hapus padding atas tambahan dari quiz
+            appDiv.className = 'flex flex-col flex-grow items-center justify-center p-4';
+            
+            const resultCard = document.createElement('div');
+            resultCard.className = 'w-full max-w-xl bg-white p-10 shadow-2xl rounded-xl text-center';
+
+            const percentage = ((state.skor / TOTAL_SOAL) * 100).toFixed(1);
+            const isLulus = state.skor > (TOTAL_SOAL / 2); // Kriteria kelulusan sederhana (> 50%)
+
+            resultCard.innerHTML = `
+                <h1 class="text-4xl font-bold mb-4 ${isLulus ? 'text-green-600' : 'text-red-600'}">
+                    ${isLulus ? 'Selamat, Anda Lulus!' : 'Hasil Asesmen Selesai'}
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">NIS: ${state.nis}</p>
+                
+                <div class="bg-indigo-50 p-6 rounded-lg mb-8">
+                    <p class="text-6xl font-extrabold text-indigo-700">${state.skor}</p>
+                    <p class="text-lg text-gray-700 mt-2">Jawaban Benar dari ${TOTAL_SOAL} Soal</p>
+                </div>
+                
+                <p class="text-3xl font-semibold text-gray-800 mb-4">Persentase: ${percentage}%</p>
+                
+                <button onclick="window.location.reload()" class="mt-6 py-3 px-8 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150">
+                    Selesai / Ulangi Asesmen
+                </button>
+            `;
+            appDiv.appendChild(resultCard);
+
+            // Bersihkan header
+            document.querySelector('header')?.remove();
+        }
+
+        // Render Halaman Peringatan Kecurangan
+        function renderCheatingWarning() {
+            // Hapus padding atas tambahan dari quiz
+            appDiv.className = 'flex flex-col flex-grow items-center justify-center p-4';
+
+            const warningCard = document.createElement('div');
+            warningCard.className = 'w-full max-w-lg bg-red-100 border-2 border-red-500 p-10 shadow-2xl rounded-xl text-center';
+            warningCard.innerHTML = `
+                <div class="text-6xl mb-4" role="img" aria-label="Warning">&#9888;&#65039;</div>
+                <h1 class="text-3xl font-bold text-red-700 mb-4">PERINGATAN! Asesmen Dibatalkan.</h1>
+                <p class="text-lg text-red-600 mb-6">Anda terdeteksi berpindah tab atau keluar dari jendela asesmen. Aturan ujian melarang hal ini.</p>
+                <p class="text-md text-red-600 mb-8 font-semibold">Anda harus mengulang dari awal.</p>
+                <button onclick="resetApp('cheating')" class="py-3 px-8 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150">
+                    Kembali ke Halaman Login
+                </button>
+            `;
+            appDiv.appendChild(warningCard);
+        }
+
+        // --- HANDLER EVENT ---
+
+        // Handler Login
+        function handleLogin(event) {
+            event.preventDefault();
+            const nisInput = document.getElementById('nis').value;
+            const passwordInput = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            if (passwordInput === PASSWORD_DEFAULT && nisInput.trim() !== '') {
+                state.nis = nisInput.trim();
+                initializeQuiz();
+                state.halaman = 'quiz';
+                render();
+            } else {
+                errorDiv.textContent = 'NIS tidak boleh kosong atau Password salah. (Password default: 123456)';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Handler Jawaban
+        function handleAnswer(event) {
+            if (state.isJawabanDiberi) return; // Mencegah klik ganda
+
+            const selectedButton = event.currentTarget;
+            const selectedValue = selectedButton.dataset.value;
+            const currentSoal = state.soalQuiz[state.soalSaatIni];
+            const isCorrect = selectedValue === currentSoal.reading;
+
+            // Hentikan timer dan atur state
+            clearTimeout(state.timerTimeout);
+            clearInterval(state.timerInterval);
+            state.isJawabanDiberi = true;
+            currentSoal.userAnswer = selectedValue;
+
+            // Beri feedback visual dan update skor
+            const feedbackArea = document.getElementById('feedback-area');
+            const feedbackMessage = document.createElement('p');
+            feedbackMessage.className = 'text-center text-xl font-bold mt-4 p-4 rounded-lg';
+
+            if (isCorrect) {
+                state.skor++;
+                feedbackMessage.classList.add('bg-green-100', 'text-green-700');
+                feedbackMessage.textContent = 'Jawaban Anda Benar! Skor bertambah.';
+                selectedButton.classList.add('bg-green-500', 'text-white', 'border-green-500');
+            } else {
+                feedbackMessage.classList.add('bg-red-100', 'text-red-700');
+                feedbackMessage.textContent = 'Jawaban Anda Salah. Lanjutkan ke soal berikutnya.';
+                selectedButton.classList.add('bg-red-500', 'text-white', 'border-red-500');
+                
+                // TIDAK menampilkan jawaban yang benar, sesuai permintaan.
+            }
+
+            feedbackArea.appendChild(feedbackMessage);
+            
+            // Nonaktifkan semua tombol opsi setelah menjawab
+            document.querySelectorAll('#options-container button').forEach(btn => btn.disabled = true);
+
+            // Lanjut ke soal berikutnya setelah 1.5 detik
+            setTimeout(nextSoal, 1500);
+        }
+
+        // Lanjut ke Soal Berikutnya
+        function nextSoal() {
+            if (state.soalSaatIni < TOTAL_SOAL - 1) {
+                state.soalSaatIni++;
+                state.jawabanDipilih = null;
+                state.isJawabanDiberi = false;
+                // Hapus header lama sebelum render baru
+                document.querySelector('header')?.remove();
+                render();
+            } else {
+                state.halaman = 'result';
+                // Hapus header lama sebelum render baru
+                document.querySelector('header')?.remove();
+                render();
+            }
+        }
+
+        // --- FUNGSI TIMER DAN ANTI-CHEATING ---
+
+        function startTimer() {
+            // Bersihkan timer lama jika ada
+            clearTimeout(state.timerTimeout);
+            clearInterval(state.timerInterval);
+
+            const timerBar = document.getElementById('timer-bar');
+            if (!timerBar) return; // Pastikan elemen ada
+
+            // Atur properti animasi CSS
+            timerBar.style.width = '100%';
+            timerBar.style.animationDuration = `${WAKTU_PER_SOAL}s`;
+            timerBar.style.animationPlayState = 'running';
+
+            // Timeout ketika waktu habis (paling akhir)
+            state.timerTimeout = setTimeout(() => {
+                // Pindah ke soal berikutnya secara otomatis jika waktu habis
+                const feedbackArea = document.getElementById('feedback-area');
+                if (feedbackArea) {
+                    feedbackArea.innerHTML = `
+                        <p class="text-center text-xl font-bold mt-4 p-4 rounded-lg bg-yellow-100 text-yellow-700">
+                            Waktu Habis! Lanjut ke soal berikutnya.
+                        </p>
+                    `;
+                }
+                
+                // Nonaktifkan tombol
+                document.querySelectorAll('#options-container button').forEach(btn => btn.disabled = true);
+                
+                // Lanjut setelah 1.5 detik
+                setTimeout(nextSoal, 1500);
+            }, WAKTU_PER_SOAL * 1000);
+
+            // Interval untuk mengupdate waktu sisa (jika perlu)
+            // state.timerInterval = setInterval(() => {
+            //     // Hanya diperlukan jika ingin menampilkan angka detik,
+            //     // Tapi karena sudah menggunakan CSS animation, interval ini tidak wajib
+            //     // Kecuali untuk keperluan debugging/tambahan fitur
+            // }, 1000);
+        }
+
+        // Reset Aplikasi ke Halaman Login
+        function resetApp(reason = 'logout') {
+            clearTimeout(state.timerTimeout);
+            clearInterval(state.timerInterval);
+            
+            // Hapus header lama
+            document.querySelector('header')?.remove();
+
+            state = {
+                nis: null,
+                halaman: reason === 'cheating' ? 'cheating' : 'login',
+                soalSaatIni: 0,
+                skor: 0,
+                jawabanDipilih: null,
+                soalQuiz: [],
+                timerInterval: null,
+                timerTimeout: null,
+                waktuSisa: WAKTU_PER_SOAL,
+                isCheating: false,
+                isJawabanDiberi: false
+            };
+            // Panggil render() setelah state direset, yang akan menampilkan halaman cheating/login
+            render();
+        }
+
+
+        // --- LOGIKA ANTI-CHEATING (Pindah Tab) ---
+        
+        let blurTime = 0;
+        
+        // Handler ketika jendela kehilangan fokus (blur)
+        function handleBlur() {
+            if (state.halaman === 'quiz') {
+                state.isCheating = true;
+                blurTime = Date.now();
+                // Opsional: Pause timer saat blur, tapi untuk membatalkan langsung lebih aman.
+            }
+        }
+
+        // Handler ketika jendela mendapatkan fokus kembali (focus)
+        function handleFocus() {
+            if (state.halaman === 'quiz' && state.isCheating) {
+                const focusTime = Date.now();
+                const duration = focusTime - blurTime;
+                
+                // Cek apakah jeda terlalu singkat (misal hanya klik menu) atau memang pindah tab
+                // Jika waktu blur lebih dari 200ms, anggap sebagai pindah tab
+                if (duration > 200) {
+                    console.warn("Deteksi kecurangan: Pindah tab terdeteksi. Reset aplikasi.");
+                    // Langsung reset ke halaman peringatan
+                    resetApp('cheating');
+                } else {
+                    // Jeda singkat, anggap bukan pindah tab yang disengaja
+                    state.isCheating = false; 
+                }
+            }
+        }
+
+        // Tambahkan event listener untuk mendeteksi pindah tab/window
+        window.addEventListener('blur', handleBlur);
+        window.addEventListener('focus', handleFocus);
+
+
+        // --- INISIALISASI ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            render(); // Mulai dengan halaman login
+        });
+    </script>
+</body>
+</html>
