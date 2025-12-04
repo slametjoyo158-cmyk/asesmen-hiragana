@@ -9,10 +9,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* Mencegah pemilihan teks dan drag pada seluruh body (Anti-Salin) */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8;
             min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: manipulation;
         }
         .container {
             max-width: 900px;
@@ -93,7 +99,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                Sesi Anda berakhir karena berpindah tab atau jendela. Silakan masuk kembali.
+                Sesi Anda berakhir karena berpindah tab, jendela, atau mencoba screenshot. Silakan masuk kembali.
             </p>
             <label for="student-name" class="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
             <input type="text" id="student-name" placeholder="Contoh: Budi Santoso" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
@@ -109,6 +115,7 @@
         <!-- Halaman Asesmen -->
         <div id="assessment-page" class="page hidden card mx-auto">
             <div class="flex justify-between items-center mb-6">
+                <!-- Total soal diubah menjadi 40 -->
                 <h2 class="text-xl font-semibold text-gray-800">Soal <span id="current-question-number">1</span> dari 40</h2>
                 <div class="flex items-center space-x-3 bg-red-100 p-2 rounded-lg border border-red-300 shadow-inner" id="timer-box">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
@@ -143,7 +150,8 @@
         <div id="result-page" class="page hidden card mx-auto text-center">
             <h2 class="text-3xl font-bold mb-4 text-green-600">Ujian Selesai!</h2>
             <p class="text-lg text-gray-700 mb-2">Skor Akhir Anda:</p>
-            <p id="final-score-display" class="text-6xl font-extrabold text-indigo-600 mb-6"></p>
+            <!-- Total skor maksimal 40 soal * 5 poin = 200 -->
+            <p id="final-score-display" class="text-6xl font-extrabold text-indigo-600 mb-6"></p> 
             <div class="bg-gray-100 p-4 rounded-lg mb-8">
                 <p class="text-md text-gray-600">Nama: <span class="font-semibold text-gray-800" id="result-name"></span></p>
                 <p class="text-md text-gray-600">NIS: <span class="font-semibold text-gray-800" id="result-nis"></span></p>
@@ -190,8 +198,9 @@
     </div>
 
     <script>
-        // Data Soal (Dibiarkan sama seperti aslinya)
+        // Data Soal (Total 40 Soal)
         const QUESTIONS_DATA = [
+            // Mochimono (Benda Sekolah) - 20 Soal
             { q: 'えんぴつ', a: 'Pensil', options: ['Buku', 'Penghapus', 'Pensil', 'Tas', 'Pulpen'], type: 'Mochimono' },
             { q: 'けしごむ', a: 'Penghapus', options: ['Penggaris', 'Penghapus', 'Buku catatan', 'Meja', 'Tas'], type: 'Mochimono' },
             { q: 'かばん', a: 'Tas', options: ['Buku', 'Tas', 'Pulpen', 'Penggaris', 'Penghapus'], type: 'Mochimono' },
@@ -207,7 +216,14 @@
             { q: 'さいふ', a: 'Dompet', options: ['Penggaris', 'Dompet', 'Buku', 'Gunting', 'Tas'], type: 'Mochimono' },
             { q: 'かみ', a: 'Kertas', options: ['Buku', 'Kertas', 'Pensil', 'Papan tulis', 'Meja'], type: 'Mochimono' },
             { q: 'じしょ', a: 'Kamus', options: ['Kamus', 'Buku gambar', 'Buku tulis', 'Buku cerita', 'Penghapus'], type: 'Mochimono' },
+            // Tambahan Mochimono
+            { q: 'パソコン', a: 'Komputer/Laptop', options: ['Kursi', 'Meja', 'Komputer/Laptop', 'Telepon', 'Lampu'], type: 'Mochimono' },
+            { q: 'けいたいでんわ', a: 'Ponsel', options: ['Ponsel', 'Kamera', 'Jam', 'Kunci', 'Dompet'], type: 'Mochimono' },
+            { q: 'かさ', a: 'Payung', options: ['Jaket', 'Payung', 'Topi', 'Sepatu', 'Tas'], type: 'Mochimono' },
+            { q: 'てちょう', a: 'Buku Agenda', options: ['Buku Agenda', 'Buku Tulis', 'Buku Cerita', 'Kamus', 'Kertas'], type: 'Mochimono' },
+            { q: 'ふくろ', a: 'Kantong/Plastik', options: ['Kotak', 'Tas', 'Kantong/Plastik', 'Dompet', 'Kunci'], type: 'Mochimono' },
             
+            // Aisatsu (Salam) - 10 Soal
             { q: 'おはようございます', a: 'Selamat pagi', options: ['Selamat pagi', 'Selamat siang', 'Selamat sore', 'Selamat malam', 'Terima kasih'], type: 'Aisatsu' },
             { q: 'こんにちは', a: 'Selamat siang', options: ['Selamat pagi', 'Selamat siang', 'Selamat malam', 'Selamat tidur', 'Permisi'], type: 'Aisatsu' },
             { q: 'こんばんは', a: 'Selamat malam', options: ['Selamat pagi', 'Selamat siang', 'Selamat malam', 'Selamat sore', 'Sampai jumpa'], type: 'Aisatsu' },
@@ -219,33 +235,37 @@
             { q: 'おやすみなさい', a: 'Selamat malam (untuk tidur)', options: ['Selamat malam (untuk tidur)', 'Selamat datang', 'Selamat pagi', 'Maaf', 'Permisi'], type: 'Aisatsu' },
             { q: 'はじめまして', a: 'Salam kenal', options: ['Selamat tidur', 'Permisi', 'Salam kenal', 'Selamat datang', 'Terima kasih'], type: 'Aisatsu' },
 
-            { q: 'いち', a: '1', options: ['1', '2', '3', '4', '5'], type: 'Kazu' },
-            { q: 'に', a: '2', options: ['3', '2', '1', '5', '6'], type: 'Kazu' },
-            { q: 'さん', a: '3', options: ['3', '4', '5', '6', '2'], type: 'Kazu' },
-            { q: 'よん', a: '4', options: ['2', '3', '4', '5', '6'], type: 'Kazu' },
-            { q: 'ご', a: '5', options: ['4', '5', '6', '7', '8'], type: 'Kazu' },
-            { q: 'ろく', a: '6', options: ['5', '6', '7', '8', '9'], type: 'Kazu' },
-            { q: 'なな', a: '7', options: ['7', '8', '9', '10', '6'], type: 'Kazu' },
-            { q: 'はち', a: '8', 'options': ['9', '8', '7', '6', '5'], type: 'Kazu' },
-            { q: 'きゅう', a: '9', options: ['8', '9', '7', '6', '5'], type: 'Kazu' },
-            { q: 'じゅう', a: '10', options: ['8', '9', '10', '11', '12'], type: 'Kazu' },
-            { q: 'ゼロ（ぜろ）', a: '0', options: ['1', '0', '5', '7', '10'], type: 'Kazu' },
+            // Kazu (Angka 11-30) - 10 Soal (Subset)
             { q: 'じゅういち', a: '11', options: ['10', '11', '12', '13', '14'], type: 'Kazu' },
-            { q: 'じゅうに', a: '12', options: ['10', '11', '12', '13', '14'], type: 'Kazu' },
             { q: 'じゅうさん', a: '13', options: ['11', '12', '13', '14', '15'], type: 'Kazu' },
-            { q: 'にじゅう', a: '20', options: ['15', '18', '19', '20', '21'], type: 'Kazu' }
+            { q: 'じゅうご', a: '15', options: ['13', '14', '15', '16', '17'], type: 'Kazu' },
+            { q: 'じゅうなな', a: '17', options: ['15', '16', '17', '18', '19'], type: 'Kazu' },
+            { q: 'じゅうきゅう', a: '19', options: ['17', '18', '19', '20', '21'], type: 'Kazu' },
+            { q: 'にじゅういち', a: '21', options: ['19', '20', '21', '22', '23'], type: 'Kazu' },
+            { q: 'にじゅうさん', a: '23', options: ['21', '22', '23', '24', '25'], type: 'Kazu' },
+            { q: 'にじゅうご', a: '25', options: ['23', '24', '25', '26', '27'], type: 'Kazu' },
+            { q: 'にじゅうなな', a: '27', options: ['25', '26', '27', '28', '29'], type: 'Kazu' },
+            { q: 'さんじゅう', a: '30', options: ['28', '29', '30', '31', '32'], type: 'Kazu' },
+            
+            // Total: 20 + 10 + 10 = 40 Soal.
         ];
 
         // Variabel Global
-        let shuffledQuestions = [];
-        let currentQuestionIndex = 0;
-        let currentScore = 0;
-        let correctCount = 0;
+        let assessmentState = {
+            shuffledQuestions: [],
+            currentQuestionIndex: 0,
+            currentScore: 0,
+            correctCount: 0,
+            userName: '',
+            userNIS: '',
+            questionRandomizations: {} // Menyimpan urutan opsi yang diacak untuk setiap soal
+        };
         let timerInterval;
         const TIME_PER_QUESTION = 30; // 30 detik per soal
         const SCORE_PER_QUESTION = 5; // 5 poin per soal
-        const RESTART_QUESTION_THRESHOLD = 30; // Batas soal ke-30 untuk cek skor minimal
-        const MIN_CORRECT_TO_PASS = 16; // Minimal 16 benar dari 30 soal pertama untuk lanjut
+        const RESTART_QUESTION_THRESHOLD = 30; 
+        const MIN_CORRECT_TO_PASS = 20; // Minimal 20 benar dari 30 soal pertama
+        const SESSION_KEY = 'assessmentState';
 
         // Element DOM
         const pages = ['login-page', 'assessment-page', 'result-page', 'scores-page'];
@@ -278,6 +298,7 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
+            return array;
         }
 
         window.showPage = function(pageId) {
@@ -287,12 +308,49 @@
             document.getElementById(pageId).classList.remove('hidden');
         }
 
+        function saveState() {
+            try {
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify(assessmentState));
+            } catch (e) {
+                console.error("Gagal menyimpan state sesi:", e);
+            }
+        }
+
+        function loadState() {
+            try {
+                const savedState = sessionStorage.getItem(SESSION_KEY);
+                if (savedState) {
+                    // Update state global
+                    assessmentState = JSON.parse(savedState);
+                    
+                    // Isi form login dengan data sesi yang tersimpan
+                    elements.loginName.value = assessmentState.userName;
+                    elements.loginNIS.value = assessmentState.userNIS;
+                    
+                    // Lanjutkan ujian jika sesi aktif
+                    if (assessmentState.shuffledQuestions.length > 0 && 
+                        assessmentState.currentQuestionIndex < assessmentState.shuffledQuestions.length) {
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal memuat state sesi:", e);
+            }
+            return false;
+        }
+
         function resetAssessmentState() {
-            currentQuestionIndex = 0;
-            currentScore = 0;
-            correctCount = 0;
             clearInterval(timerInterval);
-            sessionStorage.removeItem('isAssessmentActive');
+            sessionStorage.removeItem(SESSION_KEY);
+            assessmentState = {
+                shuffledQuestions: [],
+                currentQuestionIndex: 0,
+                currentScore: 0,
+                correctCount: 0,
+                userName: '',
+                userNIS: '',
+                questionRandomizations: {}
+            };
             elements.timerDisplay.textContent = TIME_PER_QUESTION;
             elements.timerBox.classList.remove('timer-red');
         }
@@ -300,43 +358,62 @@
 
         // --- Logika Anti-Cheat & Sesi (Perbaikan Agresif) ---
 
-        // FUNGSI PERBAIKAN: Fungsi untuk mereset sesi dan melakukan hard-reload
-        function triggerReloadToLogin() {
-            // HANYA LAKUKAN RELOAD JIKA PENGGUNA SEDANG BERADA DI HALAMAN UJIAN (assessment-page)
-            // Cek kondisi visible pada UI, bukan hanya sessionStorage.
+        function triggerReloadToLogin(messageKey) {
+            // HANYA LAKUKAN RELOAD JIKA PENGGUNA SEDANG BERADA DI HALAMAN UJIAN
             if (document.getElementById('assessment-page').classList.contains('hidden')) {
                 return; 
             }
             
-            // 1. Matikan timer
             clearInterval(timerInterval);
-            // 2. Hapus semua data sesi (penting)
-            sessionStorage.clear();
-            // 3. Tambahkan pesan peringatan di localStorage agar muncul setelah reload
-            localStorage.setItem('sessionExpired', 'true');
+            localStorage.setItem('sessionExpired', messageKey || 'default');
             
-            // 4. Lakukan hard reload untuk memastikan semua state JavaScript hilang dan kembali ke kondisi awal
+            // Hapus sesi sebelum reload agar benar-benar mengulang
+            sessionStorage.removeItem(SESSION_KEY);
+            
             window.location.reload(); 
         }
-
+        
         // Anti-Cheat 1: Kembali ke login jika pindah tab/minimalkan (Visibility Change)
         document.addEventListener('visibilitychange', () => {
-            // Periksa apakah dokumen tidak terlihat (pindah tab atau minimalkan)
             if (document.hidden) {
-                triggerReloadToLogin();
+                triggerReloadToLogin('tab-switch');
             }
         });
 
         // Anti-Cheat 2: Kembali ke login jika kehilangan fokus (Pindah Jendela/Aplikasi)
-        // Ini adalah penambahan yang harusnya lebih efektif untuk mengcover pindah jendela.
         window.addEventListener('blur', () => {
-            triggerReloadToLogin();
+            triggerReloadToLogin('window-blur');
         });
 
+        // Anti-Cheat 3: Menonaktifkan klik kanan
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            triggerReloadToLogin('right-click');
+        });
+
+        // Anti-Cheat 4: Mencegah tombol F12, Ctrl+Shift+I, Ctrl+S, Ctrl+U (Inspect/DevTools/Salin)
+        document.addEventListener('keydown', (e) => {
+            const keyCode = e.keyCode;
+            // F12 (123), Ctrl+Shift+I (73), Ctrl+Shift+J (74), Ctrl+Shift+C (67), Ctrl+S (83), Ctrl+U (85)
+            if (keyCode === 123 || 
+                (e.ctrlKey && e.shiftKey && (keyCode === 73 || keyCode === 74 || keyCode === 67)) || 
+                (e.ctrlKey && keyCode === 83) || 
+                (e.ctrlKey && keyCode === 85) 
+            ) {
+                e.preventDefault();
+                triggerReloadToLogin('dev-tool');
+            }
+            
+            // Memblokir PrintScreen (PrtSc/44)
+            if (keyCode === 44) {
+                 e.preventDefault();
+                 triggerReloadToLogin('screenshot-attempt');
+            }
+        });
 
         // --- Logika Ujian ---
 
-        function startAssessment() {
+        function startAssessment(isResuming = false) {
             const name = elements.loginName.value.trim();
             const nis = elements.loginNIS.value.trim();
 
@@ -345,19 +422,29 @@
                 elements.loginError.classList.remove('hidden');
                 return;
             }
+            
             elements.loginError.classList.add('hidden');
             elements.reloadMessage.classList.add('hidden');
 
-            // Simpan sesi
-            sessionStorage.setItem('userName', name);
-            sessionStorage.setItem('userNIS', nis);
-            sessionStorage.setItem('isAssessmentActive', 'true'); // Tanda bahwa ujian sedang berjalan
-
-            // Reset dan acak urutan soal
-            resetAssessmentState();
-            shuffledQuestions = [...QUESTIONS_DATA];
-            shuffleArray(shuffledQuestions);
-
+            if (!isResuming) {
+                // Sesi baru: Reset, acak soal & simpan state awal
+                resetAssessmentState();
+                
+                // 1. Acak urutan soal
+                assessmentState.shuffledQuestions = shuffleArray([...QUESTIONS_DATA]);
+                
+                // 2. Simpan identitas
+                assessmentState.userName = name;
+                assessmentState.userNIS = nis;
+            } else {
+                // Lanjutkan sesi: Gunakan data yang sudah dimuat dari loadState()
+                // Nama dan NIS diambil dari input karena sudah diisi oleh loadState()
+                assessmentState.userName = name;
+                assessmentState.userNIS = nis;
+            }
+            
+            saveState(); // Simpan state awal/lanjutan
+            
             showPage('assessment-page');
             showNextQuestion();
         }
@@ -387,39 +474,51 @@
         }
 
         function showNextQuestion() {
-            // Cek Re-do Logic (di akhir soal ke-30)
-            if (currentQuestionIndex === RESTART_QUESTION_THRESHOLD) {
-                if (correctCount < MIN_CORRECT_TO_PASS) {
+            // Cek Ujian Selesai
+            if (assessmentState.currentQuestionIndex >= assessmentState.shuffledQuestions.length) {
+                endAssessment();
+                return;
+            }
+            
+            // Logika Re-do - Cek di akhir soal ke-30 (saat index = 30)
+            if (assessmentState.currentQuestionIndex === RESTART_QUESTION_THRESHOLD) {
+                if (assessmentState.correctCount < MIN_CORRECT_TO_PASS) {
                     clearInterval(timerInterval);
                     elements.modalRedo.classList.remove('hidden');
-                    elements.modalRedoMessage.textContent = `Anda baru menjawab benar ${correctCount} dari ${RESTART_QUESTION_THRESHOLD} soal pertama. Untuk melanjutkan ke soal 31-40, Anda harus benar minimal ${MIN_CORRECT_TO_PASS} soal. Silakan ulangi ujian dari awal.`;
                     
-                    // Tombol untuk memulai ulang
+                    elements.modalRedoMessage.textContent = `Anda baru menjawab benar ${assessmentState.correctCount} dari ${RESTART_QUESTION_THRESHOLD} soal pertama. Untuk melanjutkan ke soal 31-40, Anda harus benar minimal ${MIN_CORRECT_TO_PASS} soal. Silakan ulangi ujian dari awal.`;
+                    
                     elements.modalRedoButton.onclick = () => {
                         elements.modalRedo.classList.add('hidden');
-                        startAssessment(); // Memulai ulang total
+                        startAssessment(false); // Memulai ulang total (isResuming = false)
                     };
                     return; // Hentikan proses pertanyaan berikutnya
                 }
             }
             
-            // Cek Ujian Selesai
-            if (currentQuestionIndex >= shuffledQuestions.length) {
-                endAssessment();
-                return;
-            }
-
-            const question = shuffledQuestions[currentQuestionIndex];
+            const questionIndex = assessmentState.currentQuestionIndex;
+            const question = assessmentState.shuffledQuestions[questionIndex];
             
             // Tampilkan Soal
-            elements.qNum.textContent = currentQuestionIndex + 1;
+            elements.qNum.textContent = questionIndex + 1;
+            // Menghilangkan bagian Romaji (di dalam kurung)
             elements.hiraganaWord.textContent = question.q.replace(/（[^）]*）/g, '').trim(); 
-            elements.scoreDisplay.textContent = currentScore;
-            elements.correctDisplay.textContent = correctCount;
+            elements.scoreDisplay.textContent = assessmentState.currentScore;
+            elements.correctDisplay.textContent = assessmentState.correctCount;
 
-            // ACak Opsi Jawaban
-            let randomizedOptions = [...question.options];
-            shuffleArray(randomizedOptions);
+            let randomizedOptions;
+            const qKey = question.q + question.a; // Kunci unik untuk soal
+
+            // Cek apakah opsi soal ini sudah pernah diacak dan disimpan
+            if (assessmentState.questionRandomizations[qKey]) {
+                randomizedOptions = assessmentState.questionRandomizations[qKey];
+            } else {
+                // ACak Opsi Jawaban
+                randomizedOptions = shuffleArray([...question.options]);
+                // Simpan urutan opsi yang sudah diacak
+                assessmentState.questionRandomizations[qKey] = randomizedOptions;
+                saveState(); // Simpan state setelah pengacakan opsi baru
+            }
             
             // Tampilkan Opsi Jawaban yang sudah diacak
             elements.answerButtons.forEach((button, index) => {
@@ -434,12 +533,13 @@
             startTimer();
         }
 
-        function handleAnswer(selectedAnswer) {
+        function handleAnswer(selectedDataAnswer) {
             clearInterval(timerInterval);
             elements.timerBox.classList.remove('timer-red');
             
-            const question = shuffledQuestions[currentQuestionIndex];
-            const isTimeout = selectedAnswer === null;
+            const questionIndex = assessmentState.currentQuestionIndex;
+            const question = assessmentState.shuffledQuestions[questionIndex];
+            const isTimeout = selectedDataAnswer === null;
             let isCorrect = false;
             let selectedButton = null;
 
@@ -448,7 +548,7 @@
             
             if (!isTimeout) {
                 // Cari tombol yang diklik berdasarkan data-answer (A, B, C, D, E)
-                selectedButton = Array.from(elements.answerButtons).find(b => b.dataset.answer === selectedAnswer);
+                selectedButton = Array.from(elements.answerButtons).find(b => b.dataset.answer === selectedDataAnswer);
 
                 if (selectedButton) {
                     const selectedText = selectedButton.querySelector('.option-text').textContent;
@@ -462,54 +562,56 @@
                  // Jika Timeout, anggap salah
                  isCorrect = false;
             }
-
-            // TIDAK menampilkan jawaban benar jika salah/timeout (sesuai permintaan user)
             
             if (isCorrect) {
-                currentScore += SCORE_PER_QUESTION;
-                correctCount++;
+                assessmentState.currentScore += SCORE_PER_QUESTION;
+                assessmentState.correctCount++;
             }
             
-            // Update skor di UI sebelum pindah
-            elements.scoreDisplay.textContent = currentScore;
-            elements.correctDisplay.textContent = correctCount;
+            // Update skor di UI
+            elements.scoreDisplay.textContent = assessmentState.currentScore;
+            elements.correctDisplay.textContent = assessmentState.correctCount;
+            
+            // Simpan state setelah menjawab
+            assessmentState.currentQuestionIndex++;
+            saveState();
 
             // Lanjutkan ke soal berikutnya setelah jeda 1 detik
             setTimeout(() => {
-                currentQuestionIndex++;
                 showNextQuestion();
             }, 1000); 
         }
 
         function endAssessment() {
-            sessionStorage.removeItem('isAssessmentActive');
+            // Hapus sesi setelah ujian selesai
+            sessionStorage.removeItem(SESSION_KEY);
 
-            const name = sessionStorage.getItem('userName');
-            const nis = sessionStorage.getItem('userNIS');
+            const { userName, userNIS, currentScore, correctCount } = assessmentState;
 
             // Simpan skor
-            saveScore(name, nis, currentScore, correctCount);
+            saveScore(userName, userNIS, currentScore, correctCount);
 
             // Tampilkan Hasil
             elements.finalScore.textContent = `${currentScore} / 200`;
-            elements.resultName.textContent = name;
-            elements.resultNIS.textContent = nis;
+            elements.resultName.textContent = userName;
+            elements.resultNIS.textContent = userNIS;
             elements.resultCorrect.textContent = correctCount;
             
             showPage('result-page');
-            // Bersihkan sesi
-            sessionStorage.clear();
+            
+            // Bersihkan state global setelah semua selesai
+            assessmentState = {}; 
         }
 
-        // Listener Jawaban: Menggunakan event.currentTarget untuk mendapatkan data dari tombol
+        // Listener Jawaban
         elements.answerButtons.forEach(button => {
             button.addEventListener('click', (event) => {
                 handleAnswer(event.currentTarget.dataset.answer);
             });
         });
 
-        // Listener Login
-        elements.loginButton.addEventListener('click', startAssessment);
+        // Listener Login: Mulai ujian baru
+        elements.loginButton.addEventListener('click', () => startAssessment(false));
 
 
         // --- Logika Penyimpanan dan Riwayat Skor ---
@@ -553,20 +655,41 @@
 
         // Inisialisasi: Cek sesi, tampilkan halaman login, dan cek pesan kadaluarsa
         document.addEventListener('DOMContentLoaded', () => {
-            // Cek apakah ada sesi yang kadaluarsa setelah reload dari anti-cheat
-            if (localStorage.getItem('sessionExpired') === 'true') {
+            const expiredMessage = localStorage.getItem('sessionExpired');
+            if (expiredMessage) {
                 elements.reloadMessage.classList.remove('hidden');
+                
+                let messageText = 'Sesi Anda berakhir karena berpindah tab, jendela, atau mencoba screenshot. Silakan masuk kembali.';
+                if (expiredMessage === 'tab-switch') {
+                    messageText = 'Sesi berakhir: Terdeteksi pindah tab. Silakan masuk kembali.';
+                } else if (expiredMessage === 'window-blur') {
+                    messageText = 'Sesi berakhir: Terdeteksi pindah jendela/aplikasi. Silakan masuk kembali.';
+                } else if (expiredMessage === 'dev-tool') {
+                    messageText = 'Sesi berakhir: Terdeteksi upaya akses ke Developer Tools (F12/Ctrl+Shift+I). Silakan masuk kembali.';
+                } else if (expiredMessage === 'screenshot-attempt') {
+                    messageText = 'Sesi berakhir: Terdeteksi upaya Screenshot. Silakan masuk kembali.';
+                } else if (expiredMessage === 'right-click') {
+                    messageText = 'Sesi berakhir: Klik kanan dinonaktifkan. Silakan masuk kembali.';
+                }
+
+                elements.reloadMessage.querySelector('svg').innerHTML = '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1zm0 8a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />'; 
+                elements.reloadMessage.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">${elements.reloadMessage.querySelector('svg').innerHTML}</svg>${messageText}`;
+
                 localStorage.removeItem('sessionExpired'); // Hapus pesan agar tidak muncul lagi
             }
 
-            // PENTING: Cek dan bersihkan sesi 'isAssessmentActive' yang terpotong (misal, karena user me-reload manual)
-            if (sessionStorage.getItem('isAssessmentActive') === 'true') {
-                resetAssessmentState();
-                sessionStorage.clear();
-                // Tampilkan pesan peringatan jika belum ditampilkan oleh localStorage/reload
-                if (elements.reloadMessage.classList.contains('hidden')) {
-                    elements.reloadMessage.classList.remove('hidden');
-                }
+            // Cek apakah ada sesi yang tersimpan untuk dilanjutkan
+            if (loadState()) {
+                elements.loginError.textContent = `Sesi Anda yang terakhir (Soal ${assessmentState.currentQuestionIndex + 1}) sudah dimuat. Tekan "Mulai Ujian" untuk melanjutkan.`;
+                elements.loginError.classList.remove('hidden');
+                
+                // Ganti fungsi tombol login untuk melanjutkan sesi
+                elements.loginButton.removeEventListener('click', () => startAssessment(false));
+                elements.loginButton.addEventListener('click', () => startAssessment(true));
+            } else {
+                // Pastikan tombol login menggunakan fungsi startAssessment (baru)
+                elements.loginButton.removeEventListener('click', () => startAssessment(true));
+                elements.loginButton.addEventListener('click', () => startAssessment(false));
             }
             
             showPage('login-page');
