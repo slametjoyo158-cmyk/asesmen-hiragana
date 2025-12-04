@@ -115,8 +115,8 @@
         <!-- Halaman Asesmen -->
         <div id="assessment-page" class="page hidden card mx-auto">
             <div class="flex justify-between items-center mb-6">
-                <!-- Total soal diubah menjadi 40 -->
-                <h2 class="text-xl font-semibold text-gray-800">Soal <span id="current-question-number">1</span> dari 40</h2>
+                <!-- Total soal diubah menjadi 50 -->
+                <h2 class="text-xl font-semibold text-gray-800">Soal <span id="current-question-number">1</span> dari 50</h2>
                 <div class="flex items-center space-x-3 bg-red-100 p-2 rounded-lg border border-red-300 shadow-inner" id="timer-box">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
@@ -150,12 +150,12 @@
         <div id="result-page" class="page hidden card mx-auto text-center">
             <h2 class="text-3xl font-bold mb-4 text-green-600">Ujian Selesai!</h2>
             <p class="text-lg text-gray-700 mb-2">Skor Akhir Anda:</p>
-            <!-- Total skor maksimal 40 soal * 5 poin = 200 -->
+            <!-- Total skor maksimal 50 soal * 5 poin = 250 -->
             <p id="final-score-display" class="text-6xl font-extrabold text-indigo-600 mb-6"></p> 
             <div class="bg-gray-100 p-4 rounded-lg mb-8">
                 <p class="text-md text-gray-600">Nama: <span class="font-semibold text-gray-800" id="result-name"></span></p>
                 <p class="text-md text-gray-600">NIS: <span class="font-semibold text-gray-800" id="result-nis"></span></p>
-                <p class="text-md text-gray-600">Jawaban Benar: <span class="font-bold text-green-600" id="result-correct-count"></span> dari 40</p>
+                <p class="text-md text-gray-600">Jawaban Benar: <span class="font-bold text-green-600" id="result-correct-count"></span> dari 50</p>
             </div>
             <button onclick="showPage('login-page')" class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-700 transition duration-200">Selesai & Keluar</button>
             <button onclick="showScoresPage()" class="mt-4 bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 block w-full md:inline-block md:w-auto md:ml-4">Lihat Riwayat Skor</button>
@@ -173,7 +173,8 @@
                     <thead class="bg-indigo-100">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Nama (NIS)</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Skor (Max 200)</th>
+                            <!-- Max score 250 -->
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Skor (Max 250)</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Tanggal</th>
                         </tr>
                     </thead>
@@ -198,7 +199,7 @@
     </div>
 
     <script>
-        // Data Soal (Total 40 Soal)
+        // Data Soal (Total 50 Soal)
         const QUESTIONS_DATA = [
             // Mochimono (Benda Sekolah) - 20 Soal
             { q: 'えんぴつ', a: 'Pensil', options: ['Buku', 'Penghapus', 'Pensil', 'Tas', 'Pulpen'], type: 'Mochimono' },
@@ -235,7 +236,7 @@
             { q: 'おやすみなさい', a: 'Selamat malam (untuk tidur)', options: ['Selamat malam (untuk tidur)', 'Selamat datang', 'Selamat pagi', 'Maaf', 'Permisi'], type: 'Aisatsu' },
             { q: 'はじめまして', a: 'Salam kenal', options: ['Selamat tidur', 'Permisi', 'Salam kenal', 'Selamat datang', 'Terima kasih'], type: 'Aisatsu' },
 
-            // Kazu (Angka 11-30) - 10 Soal (Subset)
+            // Kazu (Angka 11-30) - 10 Soal 
             { q: 'じゅういち', a: '11', options: ['10', '11', '12', '13', '14'], type: 'Kazu' },
             { q: 'じゅうさん', a: '13', options: ['11', '12', '13', '14', '15'], type: 'Kazu' },
             { q: 'じゅうご', a: '15', options: ['13', '14', '15', '16', '17'], type: 'Kazu' },
@@ -246,8 +247,20 @@
             { q: 'にじゅうご', a: '25', options: ['23', '24', '25', '26', '27'], type: 'Kazu' },
             { q: 'にじゅうなな', a: '27', options: ['25', '26', '27', '28', '29'], type: 'Kazu' },
             { q: 'さんじゅう', a: '30', options: ['28', '29', '30', '31', '32'], type: 'Kazu' },
+
+            // Kazu (Angka 31-50) - 10 Soal BARU
+            { q: 'さんじゅういち', a: '31', options: ['30', '31', '32', '35', '40'], type: 'Kazu' },
+            { q: 'さんじゅうさん', a: '33', options: ['32', '33', '34', '36', '41'], type: 'Kazu' },
+            { q: 'さんじゅうご', a: '35', options: ['34', '35', '36', '38', '42'], type: 'Kazu' },
+            { q: 'さんじゅうなな', a: '37', options: ['36', '37', '38', '40', '43'], type: 'Kazu' },
+            { q: 'さんじゅうきゅう', a: '39', options: ['38', '39', '40', '42', '44'], type: 'Kazu' },
+            { q: 'よんじゅう', a: '40', options: ['39', '40', '41', '43', '45'], type: 'Kazu' },
+            { q: 'よんじゅうに', a: '42', options: ['41', '42', '43', '45', '46'], type: 'Kazu' },
+            { q: 'よんじゅうよん', a: '44', options: ['43', '44', '45', '47', '48'], type: 'Kazu' },
+            { q: 'よんじゅうろく', a: '46', options: ['45', '46', '47', '49', '50'], type: 'Kazu' },
+            { q: 'よんじゅうきゅう', a: '49', options: ['47', '48', '49', '50', '51'], type: 'Kazu' },
             
-            // Total: 20 + 10 + 10 = 40 Soal.
+            // Total: 20 + 10 + 10 + 10 = 50 Soal.
         ];
 
         // Variabel Global
@@ -264,7 +277,8 @@
         const TIME_PER_QUESTION = 30; // 30 detik per soal
         const SCORE_PER_QUESTION = 5; // 5 poin per soal
         const RESTART_QUESTION_THRESHOLD = 30; 
-        const MIN_CORRECT_TO_PASS = 20; // Minimal 20 benar dari 30 soal pertama
+        // Perubahan: Minimal 25 benar dari 30 soal pertama
+        const MIN_CORRECT_TO_PASS = 25; 
         const SESSION_KEY = 'assessmentState';
 
         // Element DOM
@@ -475,7 +489,8 @@
 
         function showNextQuestion() {
             // Cek Ujian Selesai
-            if (assessmentState.currentQuestionIndex >= assessmentState.shuffledQuestions.length) {
+            // Total soal adalah 50 (sepanjang QUESTIONS_DATA.length)
+            if (assessmentState.currentQuestionIndex >= QUESTIONS_DATA.length) {
                 endAssessment();
                 return;
             }
@@ -486,7 +501,8 @@
                     clearInterval(timerInterval);
                     elements.modalRedo.classList.remove('hidden');
                     
-                    elements.modalRedoMessage.textContent = `Anda baru menjawab benar ${assessmentState.correctCount} dari ${RESTART_QUESTION_THRESHOLD} soal pertama. Untuk melanjutkan ke soal 31-40, Anda harus benar minimal ${MIN_CORRECT_TO_PASS} soal. Silakan ulangi ujian dari awal.`;
+                    // Pesan modal diperbarui untuk 25 benar
+                    elements.modalRedoMessage.textContent = `Anda baru menjawab benar ${assessmentState.correctCount} dari ${RESTART_QUESTION_THRESHOLD} soal pertama. Untuk melanjutkan ke soal 31-50, Anda harus benar minimal ${MIN_CORRECT_TO_PASS} soal. Silakan ulangi ujian dari awal.`;
                     
                     elements.modalRedoButton.onclick = () => {
                         elements.modalRedo.classList.add('hidden');
@@ -554,7 +570,8 @@
                     const selectedText = selectedButton.querySelector('.option-text').textContent;
                     isCorrect = selectedText === question.a;
 
-                    // 1. Berikan visual feedback HANYA pada tombol yang dipilih
+                    // Perubahan: HANYA berikan visual feedback pada tombol yang dipilih.
+                    // Jika salah, tombol menjadi merah, dan tombol benar TIDAK akan menjadi hijau.
                     selectedButton.classList.remove('bg-indigo-500');
                     selectedButton.classList.add(isCorrect ? 'bg-green-600' : 'bg-red-600');
                 }
@@ -592,7 +609,7 @@
             saveScore(userName, userNIS, currentScore, correctCount);
 
             // Tampilkan Hasil
-            elements.finalScore.textContent = `${currentScore} / 200`;
+            elements.finalScore.textContent = `${currentScore} / 250`;
             elements.resultName.textContent = userName;
             elements.resultNIS.textContent = userNIS;
             elements.resultCorrect.textContent = correctCount;
@@ -636,7 +653,8 @@
                 scores.sort((a, b) => new Date(b.date) - new Date(a.date)); 
                 scores.forEach(entry => {
                     const row = document.createElement('tr');
-                    const color = entry.score >= 160 ? 'text-green-600' : entry.score >= 120 ? 'text-yellow-600' : 'text-red-600';
+                    // Perubahan: Max score 250
+                    const color = entry.score >= 200 ? 'text-green-600' : entry.score >= 150 ? 'text-yellow-600' : 'text-red-600';
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.name} (${entry.nis})</td>
                         <td class="px-6 py-4 whitespace-nowrap font-bold ${color}">${entry.score}</td>
