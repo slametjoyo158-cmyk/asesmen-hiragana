@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesmen Bahasa Jepang - Kazoku</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        .option-card {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .option-card:hover {
+            background-color: #e5e7eb;
+        }
+        .option-card.selected {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="app" class="quiz-container bg-white rounded-xl shadow-lg p-6 md:p-10">
+        <!-- Login Screen -->
+        <div id="login-screen" class="space-y-6">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-gray-800">Latihan Kosakata: Anggota Keluarga</h1>
+                <p class="text-gray-500 mt-2">家族 - Kazoku</p>
+            </div>
+            <div class="space-y-4 max-w-sm mx-auto">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input type="text" id="username" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan nama Anda">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Kelas</label>
+                    <input type="text" id="userclass" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: X-IPA-1">
+                </div>
+                <button onclick="startQuiz()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition duration-300">Mulai Ujian</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span id="progress-text" class="text-sm font-semibold text-blue-600 uppercase tracking-wide">Soal 1 dari 30</span>
+                <span id="timer" class="text-sm font-mono bg-gray-100 px-3 py-1 rounded">Waktu: 00:00</span>
+            </div>
+            
+            <div id="question-container" class="mb-8">
+                <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-4">Memuat soal...</h2>
+                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options will be injected here -->
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button id="prev-btn" onclick="prevQuestion()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50">Kembali</button>
+                <button id="next-btn" onclick="nextQuestion()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lanjut</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden text-center space-y-6">
+            <h2 class="text-3xl font-bold text-gray-800">Hasil Asesmen</h2>
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 inline-block min-w-[300px]">
+                <p class="text-lg font-medium text-gray-700" id="res-name"></p>
+                <p class="text-md text-gray-600" id="res-class"></p>
+                <hr class="my-4 border-blue-200">
+                <div class="text-5xl font-black text-blue-600 mb-2" id="res-score">0</div>
+                <p class="text-gray-500" id="res-stats"></p>
+            </div>
+            <div class="flex justify-center gap-4">
+                <button onclick="location.reload()" class="bg-gray-800 text-white px-8 py-3 rounded-lg hover:bg-gray-900">Ulangi Tes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "Apa bahasa Jepang dari 'Ibu' (milik sendiri)?", a: ["Haha", "Okaasan", "Chichi", "Oneesan"], correct: 0 },
+            { q: "Apa bahasa Jepang dari 'Ayah' (milik sendiri)?", a: ["Otousan", "Chichi", "Ani", "Aniki"], correct: 1 },
+            { q: "Bagaimana cara menyebut 'Kakak Laki-laki' sendiri?", a: ["Otouto", "Ani", "Oniisan", "Imouto"], correct: 1 },
+            { q: "Apa sebutan untuk 'Kakak Perempuan' sendiri?", a: ["Ane", "Oneesan", "Imouto", "Haha"], correct: 0 },
+            { q: "'Otouto' dalam bahasa Indonesia berarti...", a: ["Kakak laki-laki", "Adik laki-laki", "Adik perempuan", "Ayah"], correct: 1 },
+            { q: "Apa bahasa Jepang dari 'Adik Perempuan'?", a: ["Ane", "Imouto", "Oneesan", "Itoko"], correct: 1 },
+            { q: "Sebutan untuk 'Kakek' sendiri adalah...", a: ["Ojiisan", "Obaasan", "Sofu", "Sobo"], correct: 2 },
+            { q: "Sebutan untuk 'Nenek' sendiri adalah...", a: ["Sobo", "Obaasan", "Sofu", "Ojiisan"], correct: 0 },
+            { q: "Jika ingin menanyakan 'Ibu (orang lain)', kata yang digunakan adalah...", a: ["Haha", "Okaasan", "Obasan", "Okusan"], correct: 1 },
+            { q: "Apa sebutan sopan untuk 'Ayah (orang lain)'?", a: ["Chichi", "Otousan", "Ojisan", "Goshuujin"], correct: 1 },
+            { q: "'Oniisan' digunakan untuk memanggil...", a: ["Adik laki-laki orang lain", "Kakak laki-laki orang lain", "Paman", "Kakek"], correct: 1 },
+            { q: "Apa sebutan untuk 'Istri' orang lain?", a: ["Kanaka", "Tsuma", "Okusan", "Haha"], correct: 2 },
+            { q: "'Goshuujin' adalah sebutan untuk...", a: ["Suami orang lain", "Istri orang lain", "Kakak orang lain", "Ayah orang lain"], correct: 0 },
+            { q: "Apa bahasa Jepang dari 'Paman'?", a: ["Ojisan", "Ojiisan", "Obaasan", "Obasan"], correct: 0 },
+            { q: "'Obasan' (dengan 'a' pendek) berarti...", a: ["Nenek", "Tante/Bibi", "Kakak perempuan", "Ibu"], correct: 1 },
+            { q: "Bagaimana cara mengatakan 'Keluarga saya ada 5 orang'?", a: ["Kazoku wa go-nin desu.", "Kyoudai wa go-nin desu.", "Kazoku wa go-hiki desu.", "Kazoku wa go-tsu desu."], correct: 0 },
+            { q: "Apa arti dari 'Kyoudai'?", a: ["Orang tua", "Saudara kandung", "Sepupu", "Teman"], correct: 1 },
+            { q: "Apa bahasa Jepang dari 'Anak-anak'?", a: ["Kodomo", "Musuko", "Musume", "Mago"], correct: 0 },
+            { q: "Sebutan untuk 'Anak Laki-laki' (milik sendiri) adalah...", a: ["Musume", "Musuko", "Boya", "Mago"], correct: 1 },
+            { q: "'Mago' dalam bahasa Indonesia berarti...", a: ["Keponakan", "Cucu", "Sepupu", "Mertua"], correct: 1 },
+            { q: "Kata tanya yang tepat untuk menanyakan 'Berapa orang jumlah anggota keluarga Anda?' adalah...", a: ["Nan-nin desu ka?", "Nan-ban desu ka?", "Nan-mai desu ka?", "Nani desu ka?"], correct: 0 },
+            { q: "Bagaimana cara mengatakan 'Saya punya 2 orang adik laki-laki'?", a: ["Otouto ga futari imasu.", "Otouto wa ni-nin desu.", "Ani ga futari imasu.", "Otouto ga hitori imasu."], correct: 0 },
+            { q: "Satuan hitung untuk '1 orang' dan '2 orang' yang benar adalah...", a: ["Ichi-nin & Ni-nin", "Hitori & Futari", "Hitotsu & Futatsu", "Hitori & Ni-nin"], correct: 1 },
+            { q: "'Kyoudai ga imasu ka?' artinya adalah...", a: ["Apakah punya keluarga?", "Apakah punya saudara kandung?", "Ada berapa orang saudaranya?", "Siapa nama saudara Anda?"], correct: 1 },
+            { q: "Lengkapilah kalimat ini: 'Watashi wa ane ga hitori ___'", a: ["Arimasu", "Imasu", "Desu", "Shimasu"], correct: 1 },
+            { q: "Apa arti dari 'Sannin kyoudai desu'?", a: ["Ada 3 orang kakak.", "Ada 3 orang adik.", "Tiga bersaudara.", "Keluarga ada 3 orang."], correct: 2 },
+            { q: "Jika Anda tidak memiliki saudara, Anda menjawab...", a: ["Kyoudai wa imasen.", "Kyoudai wa arimasen.", "Kyoudai wa hitori desu.", "Kyoudai wa go-nin desu."], correct: 0 },
+            { q: "Bagaimana cara menanyakan 'Ada berapa orang anak Anda?' secara sopan?", a: ["Kodomo wa nan-nin imasu ka?", "Okusan wa nan-nin desu ka?", "Okosama wa nan-nin imasu ka?", "Musuko wa nan-nin imasu ka?"], correct: 2 },
+            { q: "Terjemahan dari 'Saya punya satu orang anak perempuan' adalah...", a: ["Musuko ga hitori imasu.", "Musume ga hitori imasu.", "Musume ga futari imasu.", "Kodomo ga hitori desu."], correct: 1 },
+            { q: "Kata kerja 'Imasu' dalam konteks keluarga digunakan untuk...", a: ["Menyatakan keberadaan benda mati.", "Menyatakan keberadaan makhluk hidup/orang.", "Menyatakan sifat seseorang.", "Menyatakan keinginan."], correct: 1 }
+        ];
+
+        let currentQuestion = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let userData = { name: '', class: '' };
+        let startTime;
+
+        function startQuiz() {
+            const name = document.getElementById('username').value;
+            const uclass = document.getElementById('userclass').value;
+
+            if (!name || !uclass) {
+                alert("Harap isi Nama dan Kelas terlebih dahulu!");
+                return;
+            }
+
+            userData.name = name;
+            userData.class = uclass;
+            startTime = new Date();
+
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            
+            showQuestion();
+            startTimer();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('progress-text').innerText = `Soal ${currentQuestion + 1} dari ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+
+            const alphabet = ['a', 'b', 'c', 'd'];
+            q.a.forEach((opt, idx) => {
+                const button = document.createElement('div');
+                button.className = `option-card border-2 p-4 rounded-lg flex items-center ${userAnswers[currentQuestion] === idx ? 'selected' : 'border-gray-200'}`;
+                button.innerHTML = `
+                    <span class="font-bold mr-4 uppercase">${alphabet[idx]}.</span>
+                    <span>${opt}</span>
+                `;
+                button.onclick = () => selectOption(idx);
+                optionsGrid.appendChild(button);
+            });
+
+            document.getElementById('prev-btn').disabled = currentQuestion === 0;
+            document.getElementById('next-btn').innerText = currentQuestion === questions.length - 1 ? 'Selesai' : 'Lanjut';
+        }
+
+        function selectOption(index) {
+            userAnswers[currentQuestion] = index;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            if (userAnswers[currentQuestion] === null) {
+                alert("Pilih jawaban terlebih dahulu!");
+                return;
+            }
+
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            let correctCount = 0;
+            userAnswers.forEach((ans, idx) => {
+                if (ans === questions[idx].correct) correctCount++;
+            });
+
+            const score = Math.round((correctCount / questions.length) * 100);
+
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('res-name').innerText = userData.name;
+            document.getElementById('res-class').innerText = `Kelas: ${userData.class}`;
+            document.getElementById('res-score').innerText = score;
+            document.getElementById('res-stats').innerText = `Benar: ${correctCount} | Salah: ${questions.length - correctCount}`;
+        }
+
+        function startTimer() {
+            setInterval(() => {
+                const now = new Date();
+                const diff = Math.floor((now - startTime) / 1000);
+                const m = Math.floor(diff / 60).toString().padStart(2, '0');
+                const s = (diff % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `Waktu: ${m}:${s}`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
