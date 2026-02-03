@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Hiragana Kazoku - Pak Joyo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Poppins:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f7ff;
+        }
+        .jp-font {
+            font-family: 'Kosugi Maru', sans-serif;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            transition: all 0.2s;
+        }
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl">
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center">
+            <h1 class="text-3xl font-bold text-blue-600 mb-4">Kuis Hiragana: かぞく</h1>
+            <p class="text-gray-600 mb-8">Halo murid-murid Pak Joyo! Mari berlatih membaca Hiragana tentang anggota keluarga dan jumlah orang.</p>
+            <div class="bg-blue-50 p-4 rounded-lg mb-8 text-left">
+                <p class="font-semibold text-blue-800">Materi kuis:</p>
+                <ul class="list-disc list-inside text-blue-700 text-sm">
+                    <li>Istilah Anggota Keluarga (Chichi, Haha, dll)</li>
+                    <li>Menyebutkan Jumlah Orang (Hitori, Futari, dll)</li>
+                    <li>Partikel Dasar (~wa, ~ga, ~to)</li>
+                </ul>
+            </div>
+            <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-full text-xl transition shadow-lg">
+                Mulai Kuis!
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-sm font-semibold text-gray-500">Soal <span id="current-index">1</span> dari 30</span>
+                <span id="score-display" class="text-sm font-bold text-green-600">Skor: 0</span>
+            </div>
+            
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-8">
+                <div id="progress" class="bg-blue-600 h-2.5 rounded-full progress-bar" style="width: 3.33%"></div>
+            </div>
+
+            <div class="mb-8">
+                <h2 id="question-text" class="text-2xl font-bold text-gray-800 jp-font mb-4"></h2>
+                <p id="sub-question" class="text-gray-500 italic"></p>
+            </div>
+
+            <div id="options-container" class="grid grid-cols-1 gap-4">
+                <!-- Options will be generated here -->
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hasil Kuis</h2>
+            <div class="text-6xl mb-6">🎉</div>
+            <p class="text-xl mb-2">Skor Kamu:</p>
+            <div id="final-score" class="text-5xl font-bold text-blue-600 mb-8">0</div>
+            <p id="result-message" class="text-gray-600 mb-8"></p>
+            <button onclick="location.reload()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-full transition">
+                Coba Lagi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "ちち", sub: "Apa arti kata di atas?", options: ["Ayah", "Ibu", "Kakak", "Adik"], correct: 0 },
+            { q: "Apa Hiragana untuk 'Ibu'?", sub: "Keluarga sendiri", options: ["ちち", "はは", "あに", "あね"], correct: 1 },
+            { q: "あに", sub: "Siapakah ini?", options: ["Adik Laki-laki", "Kakak Laki-laki", "Kakek", "Paman"], correct: 1 },
+            { q: "あね", sub: "Siapakah ini?", options: ["Ibu", "Adik Perempuan", "Kakak Perempuan", "Nenek"], correct: 2 },
+            { q: "おとうと", sub: "Siapakah ini?", options: ["Adik Laki-laki", "Adik Perempuan", "Kakak Laki-laki", "Ayah"], correct: 0 },
+            { q: "いもうと", sub: "Siapakah ini?", options: ["Adik Perempuan", "Kakak Perempuan", "Ibu", "Nenek"], correct: 0 },
+            { q: "ひとり", sub: "Berapa jumlah orangnya?", options: ["1 orang", "2 orang", "3 orang", "4 orang"], correct: 0 },
+            { q: "ふたり", sub: "Berapa jumlah orangnya?", options: ["1 orang", "2 orang", "4 orang", "8 orang"], correct: 1 },
+            { q: "さんにん", sub: "Berapa jumlah orangnya?", options: ["1 orang", "3 orang", "5 orang", "10 orang"], correct: 1 },
+            { q: "よにん", sub: "Hati-hati, berapa orang ini?", options: ["3 orang", "4 orang", "7 orang", "9 orang"], correct: 1 },
+            { q: "ごにん", sub: "Berapa jumlah orangnya?", options: ["2 orang", "5 orang", "6 orang", "10 orang"], correct: 1 },
+            { q: "ろくにん", sub: "Berapa jumlah orangnya?", options: ["4 orang", "5 orang", "6 orang", "9 orang"], correct: 2 },
+            { q: "ななにん", sub: "Berapa jumlah orangnya?", options: ["6 orang", "7 orang", "8 orang", "10 orang"], correct: 1 },
+            { q: "はちにん", sub: "Berapa jumlah orangnya?", options: ["3 orang", "8 orang", "9 orang", "10 orang"], correct: 1 },
+            { q: "くにん", sub: "Pengecualian membaca 9 orang:", options: ["8 orang", "9 orang", "10 orang", "1 orang"], correct: 1 },
+            { q: "じゅうにん", sub: "Berapa jumlah orangnya?", options: ["1 orang", "5 orang", "10 orang", "20 orang"], correct: 2 },
+            { q: "かぞく", sub: "Apa arti kata di atas?", options: ["Rumah", "Keluarga", "Sekolah", "Teman"], correct: 1 },
+            { q: "なんにん ですか", sub: "Apa maksud pertanyaan ini?", options: ["Siapa itu?", "Di mana itu?", "Berapa orang?", "Ada apa?"], correct: 2 },
+            { q: "あにが います", sub: "Apa arti kalimat ini?", options: ["Ada kakak laki-laki", "Tidak ada kakak", "Ada ayah", "Ada adik"], correct: 0 },
+            { q: "いもうとが いません", sub: "Apa arti kalimat ini?", options: ["Ada adik perempuan", "Tidak ada adik perempuan", "Adik pergi", "Adik makan"], correct: 1 },
+            { q: "そぼ", sub: "Sebutan untuk siapa ini?", options: ["Kakek", "Nenek", "Bibi", "Ibu"], correct: 1 },
+            { q: "そふ", sub: "Sebutan untuk siapa ini?", options: ["Kakek", "Nenek", "Paman", "Ayah"], correct: 0 },
+            { q: "Pilih penulisan 'imouto' yang benar:", sub: "Adik perempuan", options: ["いもと", "いみと", "いもうと", "いめうと"], correct: 2 },
+            { q: "Pilih penulisan 'otouto' yang benar:", sub: "Adik laki-laki", options: ["おとと", "おとうと", "おとおと", "おとう"], correct: 1 },
+            { q: "ちち と はは", sub: "Apa artinya?", options: ["Ayah dan Ibu", "Ibu dan Kakak", "Kakak dan Adik", "Ayah dan Adik"], correct: 0 },
+            { q: "わたし", sub: "Siapa ini?", options: ["Kamu", "Dia", "Saya", "Mereka"], correct: 2 },
+            { q: "かぞくは よにん です", sub: "Artinya?", options: ["Keluarga ada 4 orang", "Keluarga ada 3 orang", "Saya ada 4 orang", "Teman ada 4 orang"], correct: 0 },
+            { q: "あねが ふたり います", sub: "Artinya?", options: ["Punya 1 kakak", "Punya 2 kakak perempuan", "Ada 2 adik perempuan", "Keluarga ada 2 orang"], correct: 1 },
+            { q: "だれ ですか", sub: "Apa artinya?", options: ["Siapa?", "Apa?", "Berapa?", "Kapan?"], correct: 0 },
+            { q: "Lengkapi: はは (...) あね", sub: "Ibu dan Kakak (perempuan)", options: ["が", "を", "と", "は"], correct: 2 }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById('current-index').innerText = currentIndex + 1;
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('sub-question').innerText = q.sub;
+            document.getElementById('progress').style.width = ((currentIndex + 1) / questions.length * 100) + '%';
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn bg-white border-2 border-gray-200 p-4 rounded-xl text-left hover:border-blue-500 hover:bg-blue-50 transition font-medium text-gray-700 shadow-sm";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            if (selectedIndex === questions[currentIndex].correct) {
+                score += 10;
+                document.getElementById('score-display').innerText = `Skor: ${score}`;
+            }
+            
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            
+            let msg = "";
+            const maxScore = questions.length * 10;
+            if (score === maxScore) msg = "Luar biasa! Hiragana kamu sempurna!";
+            else if (score >= maxScore * 0.7) msg = "Bagus sekali! Kamu sudah paham materi Kazoku.";
+            else if (score >= maxScore * 0.5) msg = "Cukup baik, tapi yuk belajar lagi Hiragananya.";
+            else msg = "Jangan menyerah! Ayo rajin berlatih membaca lagi.";
+            
+            document.getElementById('result-message').innerText = msg;
+        }
+    </script>
+</body>
+</html>
