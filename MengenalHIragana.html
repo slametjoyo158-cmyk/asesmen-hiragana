@@ -3,73 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asesmen Hiragana Berbasis Web</title>
-    <!-- Memuat Tailwind CSS untuk styling -->
+    <title>Mengenal Hiragana & Asesmen Ujian Interaktif</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        jp: ['Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        jp: {
+                            red: '#e63946',
+                            dark: '#1d3557',
+                            light: '#f1faee',
+                            blue: '#457b9d',
+                            accent: '#a8dadc'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* Menggunakan font Inter sebagai standar */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f4f7f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
         }
-        /* Style untuk tombol opsi */
-        .option-button {
-            transition: all 0.2s;
-            cursor: pointer;
+        .font-jp {
+            font-family: 'Noto Sans JP', sans-serif;
         }
-        .option-button:hover:not(.disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        /* Style untuk karakter Hiragana besar */
-        .hiragana-char {
-            font-size: 6rem; /* Ukuran besar untuk Hiragana */
-            font-weight: 700;
-            color: #1a202c;
-            line-height: 1;
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
         }
-        /* Animasi Timer Bar */
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Smooth scale animation */
+        .card-hover {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        /* Timer Bar Animation */
         @keyframes timer {
             from { width: 100%; }
             to { width: 0%; }
         }
-        .timer-bar {
+        .timer-bar-anim {
             animation-name: timer;
             animation-timing-function: linear;
         }
-        .disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-slate-50">
 
-    <!-- Kontainer Utama Aplikasi -->
-    <div id="app" class="flex flex-col flex-grow items-center justify-center p-4">
-        <!-- Konten akan dimuat di sini oleh JavaScript -->
+    <!-- Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-red-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-red-200 font-jp">
+                    あ
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-slate-800">Master Hiragana</h1>
+                    <p class="text-xs text-slate-500 font-medium">Modul Belajar & Asesmen Ujian</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav id="nav-menu" class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1.5 rounded-xl text-sm font-semibold">
+                <button id="btn-tab-table" onclick="switchTab('table')" class="px-3 sm:px-5 py-2 rounded-lg transition-all duration-200 bg-white text-red-600 shadow-sm font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-table-cells text-sm"></i>
+                    <span class="hidden sm:inline">Tabel Hiragana</span>
+                </button>
+                <button id="btn-tab-quiz" onclick="switchTab('quiz')" class="px-3 sm:px-5 py-2 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-2">
+                    <i class="fa-solid fa-pen-ruler text-sm"></i>
+                    <span>Latihan / Ujian</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main id="app" class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Content injected via JS -->
+    </main>
+
+    <!-- Modal Pop-up Kartu & Penulisan Huruf -->
+    <div id="char-modal" onclick="handleModalBackdropClick(event)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
+        <div id="char-modal-card" class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl transform transition-all duration-300 scale-95 relative border border-slate-100">
+            <!-- Close Button -->
+            <button onclick="closeCharModal()" class="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Modal Content -->
+            <div class="text-center">
+                <!-- Header Badge -->
+                <span id="modal-category" class="inline-block px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full uppercase tracking-wider mb-3">Vokal Dasar</span>
+                
+                <!-- Large Character & Audio -->
+                <div class="relative inline-block my-2">
+                    <div id="modal-char" class="font-jp text-8xl font-bold text-slate-800 leading-none">あ</div>
+                    <button onclick="playCurrentAudio()" class="mt-3 inline-flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm font-semibold shadow-md shadow-red-200 transition-all hover:scale-105 active:scale-95">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span>Dengar Suara (<span id="modal-romaji" class="capitalize">a</span>)</span>
+                    </button>
+                </div>
+
+                <!-- Penjelasan Stroke & Panduan Nulis -->
+                <div class="mt-6 border-t border-slate-100 pt-5 text-left">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-slate-800 flex items-center text-sm">
+                            <i class="fa-solid fa-paintbrush text-red-500 mr-2"></i> Urutan Goresan (NHK Style)
+                        </h4>
+                        <span id="modal-strokes" class="text-xs bg-slate-100 px-2.5 py-1 rounded-md text-slate-600 font-semibold">3 Goresan</span>
+                    </div>
+
+                    <!-- Visual Goresan / Stroke Canvas Standard NHK Grid -->
+                    <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
+                        <!-- Grid Lines like NHK World -->
+                        <div class="w-48 h-48 relative flex items-center justify-center bg-white border border-dashed border-slate-200 rounded-xl">
+                            <!-- Crosshair Grid lines -->
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div class="w-full border-t border-dashed border-slate-300"></div>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div class="h-full border-l border-dashed border-slate-300"></div>
+                            </div>
+
+                            <!-- SVG Stroke Visualizer with Numbers -->
+                            <div id="nhk-stroke-box" class="w-full h-full relative flex items-center justify-center">
+                                <span id="modal-char-nhk" class="font-jp text-8xl font-bold text-slate-900 leading-none select-none">あ</span>
+                                <!-- Dynamic Stroke Number Badges Layer -->
+                                <div id="stroke-badges-layer" class="absolute inset-0 pointer-events-none"></div>
+                            </div>
+                        </div>
+
+                        <!-- Step Interactive Player -->
+                        <div class="flex items-center justify-between w-full max-w-xs mt-3 px-2">
+                            <button onclick="prevStrokeStep()" class="text-xs font-semibold px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors flex items-center space-x-1">
+                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                                <span>Langkah</span>
+                            </button>
+                            <span id="stroke-step-indicator" class="text-xs font-bold text-slate-600">Semua Goresan</span>
+                            <button onclick="nextStrokeStep()" class="text-xs font-semibold px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors flex items-center space-x-1">
+                                <span>Putar</span>
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                            </button>
+                        </div>
+
+                        <p id="stroke-guide-text" class="text-xs text-slate-600 text-center mt-3 font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-100 w-full">Goresan 1: Tarik garis mendatar dari kiri ke kanan.</p>
+                    </div>
+
+                    <!-- Mnemonic / Tips Ingatan -->
+                    <div class="mt-4 bg-amber-50 border border-amber-200/60 rounded-xl p-3 flex items-start space-x-3">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 text-base"></i>
+                        <p id="modal-tip" class="text-xs text-amber-800 leading-relaxed font-medium">Tips: Ingat bentuk huruf ini seperti huruf 'A' yang melingkar halus.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- JavaScript Logic -->
     <script>
-        // --- KONFIGURASI DAN DATA SOAL ---
-        const soalData = [
-            { char: 'あ', reading: 'a' }, { char: 'い', reading: 'i' }, { char: 'う', reading: 'u' }, { char: 'え', reading: 'e' }, { char: 'お', reading: 'o' },
-            { char: 'か', reading: 'ka' }, { char: 'き', reading: 'ki' }, { char: 'く', reading: 'ku' }, { char: 'け', reading: 'ke' }, { char: 'こ', reading: 'ko' },
-            { char: 'さ', reading: 'sa' }, { char: 'し', reading: 'shi' }, { char: 'す', reading: 'su' }, { char: 'せ', reading: 'se' }, { char: 'そ', reading: 'so' },
-            { char: 'た', reading: 'ta' }, { char: 'ち', reading: 'chi' }, { char: 'つ', reading: 'tsu' }, { char: 'て', reading: 'te' }, { char: 'と', reading: 'to' },
-            { char: 'な', reading: 'na' }, { char: 'に', reading: 'ni' }, { char: 'ぬ', reading: 'nu' }, { char: 'ね', 'reading': 'ne' }, { char: 'の', 'reading': 'no' },
-            { char: 'は', reading: 'ha' }, { char: 'ひ', reading: 'hi' }, { char: 'ふ', reading: 'fu' }, { char: 'へ', reading: 'he' }, { char: 'ほ', reading: 'ho' }
-        ];
-
-        const TOTAL_SOAL = 30;
+        // ==========================================
+        // KONFIGURASI DAN STATE GLOBAL APLIKASI
+        // ==========================================
+        const TOTAL_SOAL = 60;
         const WAKTU_PER_SOAL = 30; // Detik
         const PASSWORD_DEFAULT = '123456';
 
-        // --- STATE APLIKASI ---
+        // State Utama Aplikasi
         let state = {
             nis: null,
-            halaman: 'login', // 'login', 'quiz', 'result', 'cheating'
+            activeTab: 'table', // 'table' atau 'quiz'
+            halaman: 'login',   // 'login', 'quiz', 'result', 'cheating'
+            filterTable: 'all', // 'all', 'basic', 'dakuon', 'handakuon', 'yoon'
             soalSaatIni: 0,
             skor: 0,
             jawabanDipilih: null,
@@ -77,418 +206,650 @@
             timerInterval: null,
             timerTimeout: null,
             waktuSisa: WAKTU_PER_SOAL,
-            isCheating: false, // Flag untuk deteksi pindah tab
-            isJawabanDiberi: false // Flag untuk status jawaban
+            isCheating: false,
+            isJawabanDiberi: false,
+            currentActiveChar: null
         };
 
-        // --- FUNGSI UTILITAS ---
-
-        // Fungsi untuk mengacak array (Fisher-Yates)
+        // Utility: Fisher-Yates Shuffle
         function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+                [arr[i], arr[j]] = [arr[j], arr[i]];
             }
-            return array;
+            return arr;
         }
 
-        // Fungsi untuk membuat 5 opsi jawaban, 1 benar dan 4 pengecoh
-        function generateOptions(correctReading) {
-            const allReadings = soalData.map(d => d.reading).filter(r => r !== correctReading);
-            // Ambil 4 pengecoh acak yang unik
-            let incorrectOptions = shuffle(allReadings).slice(0, 4);
-            let options = shuffle([correctReading, ...incorrectOptions]);
+        // Speech Synthesis (Audio Suara Hiragana)
+        function speakHiragana(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
 
-            // Mapping opsi ke label A, B, C, D, E (sebagai angka 1-5 di UI)
-            const optionLabels = ['A', 'B', 'C', 'D', 'E'];
-            return options.map((value, index) => ({
-                label: optionLabels[index],
-                display: value, // Tampilkan bacaan Hiragana di tombol
-                value: value
+        // Data Hiragana Lengkap (Gojūon, Dakuon, Handakuon, & Yōon)
+        const hiraganaData = [
+            // Gojūon (Dasar)
+            { char: 'あ', romaji: 'a', type: 'basic', strokes: 3, guide: '1: Garis mendatar, 2: Garis vertikal melengkung, 3: Putaran simetris', tip: 'Mirip huruf A melingkar' },
+            { char: 'い', romaji: 'i', type: 'basic', strokes: 2, guide: '1: Garis kiri dengan kait, 2: Garis kanan lebih pendek', tip: 'Dua kait sejajar' },
+            { char: 'う', romaji: 'u', type: 'basic', strokes: 2, guide: '1: Coretan kecil atas, 2: Lengkungan bawah', tip: 'Mirip huruf U miring' },
+            { char: 'え', romaji: 'e', type: 'basic', strokes: 2, guide: '1: Coretan titik atas, 2: Z lengkung bawah', tip: 'Orang sedang lari (Exertion)' },
+            { char: 'お', romaji: 'o', type: 'basic', strokes: 3, guide: '1: Garis mendatar, 2: Vertikal melingkar, 3: Titik kanan', tip: 'Mirip huruf O' },
+            { char: 'か', romaji: 'ka', type: 'basic', strokes: 3, guide: '1: Lengkung melintang kait, 2: Garis miring turun, 3: Titik kanan', tip: 'Pisau (Cut)' },
+            { char: 'き', romaji: 'ki', type: 'basic', strokes: 4, guide: '1-2: Dua garis sejajar mendatar, 3: Miring silang, 4: Lengkungan bawah', tip: 'Bentuk kunci (Key)' },
+            { char: 'く', romaji: 'ku', type: 'basic', strokes: 1, guide: '1: Satu garis miring siku melipat ke kiri', tip: 'Paruh burung ku-kut' },
+            { char: 'け', romaji: 'ke', type: 'basic', strokes: 3, guide: '1: Garis vertikal kait, 2: Mendatar, 3: Melengkung turun', tip: 'Bentuk ember (Kettle)' },
+            { char: 'こ', romaji: 'ko', type: 'basic', strokes: 2, guide: '1: Garis atas mendatar, 2: Garis bawah melengkung', tip: 'Dua garis koin' },
+
+            { char: 'さ', romaji: 'sa', type: 'basic', strokes: 3, guide: '1: Garis mendatar miring, 2: Vertikal silang, 3: Lengkung bawah', tip: 'Kembaran huruf ki' },
+            { char: 'し', romaji: 'shi', type: 'basic', strokes: 1, guide: '1: Tarikan vertikal langsung melengkung ke atas', tip: 'Kail pancing (Shinook)' },
+            { char: 'す', romaji: 'su', type: 'basic', strokes: 2, guide: '1: Garis horizontal, 2: Vertikal buat simpul melingkar', tip: 'Mie berputar (Soup)' },
+            { char: 'せ', romaji: 'se', type: 'basic', strokes: 3, guide: '1: Mendatar, 2: Vertikal kanan, 3: Vertikal kiri melengkung', tip: 'Matahari terbenam (Set)' },
+            { char: 'そ', romaji: 'so', type: 'basic', strokes: 1, guide: '1: Garis zig-zag atas dan lengkungan di bawah', tip: 'Jahitan zig-zag (Sew)' },
+
+            { char: 'た', romaji: 'ta', type: 'basic', strokes: 4, guide: '1: Mendatar, 2: Vertikal miring, 3-4: Salinan huruf "ko"', tip: 'Mirip tulisan T dan a' },
+            { char: 'ち', romaji: 'chi', type: 'basic', strokes: 2, guide: '1: Mendatar pendek, 2: Garis vertikal membentuk angka 5', tip: 'Pemandu sorak (Cheer)' },
+            { char: 'つ', romaji: 'tsu', type: 'basic', strokes: 1, guide: '1: Satu tarikan ombak besar', tip: 'Ombak Tsunami' },
+            { char: 'て', romaji: 'te', type: 'basic', strokes: 1, guide: '1: Mendatar melengkung setengah lingkaran', tip: 'Tangan (Tekap)' },
+            { char: 'と', romaji: 'to', type: 'basic', strokes: 2, guide: '1: Garis miring pendek, 2: Lengkungan C di kanan', tip: 'Jari kaki (Toe)' },
+
+            { char: 'な', romaji: 'na', type: 'basic', strokes: 4, guide: '1: Mendatar, 2: Miring vertikal, 3: Titik, 4: Simpul lengkok', tip: 'Suster berdoa (Nun)' },
+            { char: 'に', romaji: 'ni', type: 'basic', strokes: 3, guide: '1: Vertikal kait, 2-3: Huruf "ko" kecil di kanan', tip: 'Jarum dan benang (Needle)' },
+            { char: 'ぬ', romaji: 'nu', type: 'basic', strokes: 2, guide: '1: Miring, 2: Lengkok melingkar simpul ujung kanan', tip: 'Mie spageti (Noodle)' },
+            { char: 'ね', romaji: 'ne', type: 'basic', strokes: 2, guide: '1: Vertikal, 2: Zig-zag melingkar simpul', tip: 'Kucing melingkar (Neko)' },
+            { char: 'の', romaji: 'no', type: 'basic', strokes: 1, guide: '1: Satu putaran melingkar dari tengah', tip: 'Tanda larangan (No entry)' },
+
+            { char: 'は', romaji: 'ha', type: 'basic', strokes: 4, guide: '1: Vertikal kait, 2: Mendatar, 3: Vertikal simpul', tip: 'Bentuk bangunan (House)' },
+            { char: 'ひ', romaji: 'hi', type: 'basic', strokes: 1, guide: '1: Lengkungan senyum U lebar dengan ujung', tip: 'Mulut tertawa (Hee-hee)' },
+            { char: 'ふ', romaji: 'fu', type: 'basic', strokes: 4, guide: '1: Titik atas, 2: Lengkung tengah, 3-4: Titik kiri kanan', tip: 'Gunung Fuji' },
+            { char: 'へ', romaji: 'he', type: 'basic', strokes: 1, guide: '1: Satu atap puncak lancip', tip: 'Bukit atau helm (Helmet)' },
+            { char: 'ほ', romaji: 'ho', type: 'basic', strokes: 4, guide: '1: Vertikal kait, 2-3: Dua mendatar, 4: Simpul tutup atas', tip: 'Mirip huruf HA berkopiah' },
+
+            { char: 'ま', romaji: 'ma', type: 'basic', strokes: 3, guide: '1-2: Dua mendatar, 3: Vertikal simpul di bawah', tip: 'Topeng (Mask)' },
+            { char: 'み', romaji: 'mi', type: 'basic', strokes: 2, guide: '1: Angka 2 berputar, 2: Garis miring kanan', tip: 'Not musik 21 (Mi)' },
+            { char: 'む', romaji: 'mu', type: 'basic', strokes: 3, guide: '1: Mendatar, 2: Vertikal putar ke kanan, 3: Titik atas', tip: 'Sapi lenguh (Moo)' },
+            { char: 'め', romaji: 'me', type: 'basic', strokes: 2, guide: '1: Miring lengkung, 2: Putaran tanpa simpul di ujung', tip: 'Mata (Eye/Me)' },
+            { char: 'も', romaji: 'mo', type: 'basic', strokes: 3, guide: '1: Lengkung pancing lurus, 2-3: Dua garis mendatar', tip: 'Kail pancing tambahan' },
+
+            { char: 'や', romaji: 'ya', type: 'basic', strokes: 3, guide: '1: Lengkung kanan, 2: Titik miring, 3: Vertikal menembus', tip: 'Kapal layar (Yacht)' },
+            { char: 'ゆ', romaji: 'yu', type: 'basic', strokes: 2, guide: '1: Lengkung tengah, 2: Vertikal lurus menembus', tip: 'Ikan berenang (You)' },
+            { char: 'よ', romaji: 'yo', type: 'basic', strokes: 2, guide: '1: Mendatar pendek, 2: Vertikal simpul di bawah', tip: 'Mainan Yo-yo' },
+
+            { char: 'ら', romaji: 'ra', type: 'basic', strokes: 2, guide: '1: Titik atas, 2: Lengkungan vertikal di bawah', tip: 'Pemain kasti (Rabbit)' },
+            { char: 'り', romaji: 'ri', type: 'basic', strokes: 2, guide: '1: Kiri pendek, 2: Kanan panjang melengkung', tip: 'Sungai mengalir (River)' },
+            { char: 'る', romaji: 'ru', type: 'basic', strokes: 1, guide: '1: Angka 3 berujung lingkaran bundar kecil', tip: 'Roda berputar (Ring)' },
+            { char: 'れ', romaji: 're', type: 'basic', strokes: 2, guide: '1: Vertikal, 2: Zig-zag melengkung keluar', tip: 'Orang ruku/lari' },
+            { char: 'ろ', romaji: 'ro', type: 'basic', strokes: 1, guide: '1: Angka 3 tanpa lingkaran bundar ujungnya', tip: 'Jalan terbuka (Road)' },
+
+            { char: 'わ', romaji: 'wa', type: 'basic', strokes: 2, guide: '1: Vertikal lurus, 2: Lengkungan bulat membusur', tip: 'Burung terbang (Way)' },
+            { char: 'を', romaji: 'wo', type: 'basic', strokes: 3, guide: '1: Mendatar, 2: Vertikal silang, 3: Lengkok cembung', tip: 'Partikel penunjuk objek' },
+            { char: 'ん', romaji: 'n', type: 'basic', strokes: 1, guide: '1: Satu tarikan gelombang miring', tip: 'Huruf n cetak' },
+
+            // Dakuon (Tenten ¨)
+            { char: 'が', romaji: 'ga', type: 'dakuon', strokes: 5, guide: 'Huruf か + Tenten (¨)', tip: 'Perubahan bunyi KA ke GA' },
+            { char: 'ぎ', romaji: 'gi', type: 'dakuon', strokes: 6, guide: 'Huruf き + Tenten (¨)', tip: 'Perubahan bunyi KI ke GI' },
+            { char: 'ぐ', romaji: 'gu', type: 'dakuon', strokes: 3, guide: 'Huruf く + Tenten (¨)', tip: 'Perubahan bunyi KU ke GU' },
+            { char: 'げ', romaji: 'ge', type: 'dakuon', strokes: 5, guide: 'Huruf け + Tenten (¨)', tip: 'Perubahan bunyi KE ke GE' },
+            { char: 'ご', romaji: 'go', type: 'dakuon', strokes: 4, guide: 'Huruf こ + Tenten (¨)', tip: 'Perubahan bunyi KO ke GO' },
+
+            { char: 'ざ', romaji: 'za', type: 'dakuon', strokes: 5, guide: 'Huruf さ + Tenten (¨)', tip: 'Perubahan bunyi SA ke ZA' },
+            { char: 'じ', romaji: 'ji', type: 'dakuon', strokes: 3, guide: 'Huruf し + Tenten (¨)', tip: 'Perubahan bunyi SHI ke JI' },
+            { char: 'ず', romaji: 'zu', type: 'dakuon', strokes: 4, guide: 'Huruf す + Tenten (¨)', tip: 'Perubahan bunyi SU ke ZU' },
+            { char: 'ぜ', romaji: 'ze', type: 'dakuon', strokes: 5, guide: 'Huruf せ + Tenten (¨)', tip: 'Perubahan bunyi SE ke ZE' },
+            { char: 'ぞ', romaji: 'zo', type: 'dakuon', strokes: 3, guide: 'Huruf そ + Tenten (¨)', tip: 'Perubahan bunyi SO ke ZO' },
+
+            { char: 'だ', romaji: 'da', type: 'dakuon', strokes: 6, guide: 'Huruf た + Tenten (¨)', tip: 'Perubahan bunyi TA ke DA' },
+            { char: 'ぢ', romaji: 'ji', type: 'dakuon', strokes: 4, guide: 'Huruf ち + Tenten (¨)', tip: 'Perubahan bunyi CHI ke JI' },
+            { char: 'づ', romaji: 'zu', type: 'dakuon', strokes: 3, guide: 'Huruf つ + Tenten (¨)', tip: 'Perubahan bunyi TSU ke ZU' },
+            { char: 'で', romaji: 'de', type: 'dakuon', strokes: 3, guide: 'Huruf て + Tenten (¨)', tip: 'Perubahan bunyi TE ke DE' },
+            { char: 'ど', romaji: 'do', type: 'dakuon', strokes: 4, guide: 'Huruf と + Tenten (¨)', tip: 'Perubahan bunyi TO ke DO' },
+
+            { char: 'ば', romaji: 'ba', type: 'dakuon', strokes: 6, guide: 'Huruf は + Tenten (¨)', tip: 'Perubahan bunyi HA ke BA' },
+            { char: 'び', romaji: 'bi', type: 'dakuon', strokes: 3, guide: 'Huruf ひ + Tenten (¨)', tip: 'Perubahan bunyi HI ke BI' },
+            { char: 'ぶ', romaji: 'bu', type: 'dakuon', strokes: 6, guide: 'Huruf ふ + Tenten (¨)', tip: 'Perubahan bunyi FU ke BU' },
+            { char: 'べ', romaji: 'be', type: 'dakuon', strokes: 3, guide: 'Huruf へ + Tenten (¨)', tip: 'Perubahan bunyi HE ke BE' },
+            { char: 'ぼ', romaji: 'bo', type: 'dakuon', strokes: 6, guide: 'Huruf ほ + Tenten (¨)', tip: 'Perubahan bunyi HO ke BO' },
+
+            // Handakuon (Maru °)
+            { char: 'ぱ', romaji: 'pa', type: 'handakuon', strokes: 5, guide: 'Huruf は + Maru (°)', tip: 'Perubahan bunyi HA ke PA' },
+            { char: 'ぴ', romaji: 'pi', type: 'handakuon', strokes: 2, guide: 'Huruf ひ + Maru (°)', tip: 'Perubahan bunyi HI ke PI' },
+            { char: 'ぷ', romaji: 'pu', type: 'handakuon', strokes: 5, guide: 'Huruf ふ + Maru (°)', tip: 'Perubahan bunyi FU ke PU' },
+            { char: 'ぺ', romaji: 'pe', type: 'handakuon', strokes: 2, guide: 'Huruf へ + Maru (°)', tip: 'Perubahan bunyi HE ke PE' },
+            { char: 'ぽ', romaji: 'po', type: 'handakuon', strokes: 5, guide: 'Huruf ほ + Maru (°)', tip: 'Perubahan bunyi HO ke PO' },
+
+            // Yōon (Kombinasi ゃ ゅ ょ)
+            { char: 'きゃ', romaji: 'kya', type: 'yoon', strokes: 7, guide: 'Huruf き + や kecil', tip: 'Kombinasi KI dan YA' },
+            { char: 'きゅ', romaji: 'kyu', type: 'yoon', strokes: 6, guide: 'Huruf き + ゆ kecil', tip: 'Kombinasi KI dan YU' },
+            { char: 'きょ', romaji: 'kyo', type: 'yoon', strokes: 6, guide: 'Huruf き + よ kecil', tip: 'Kombinasi KI dan YO' },
+            { char: 'しゃ', romaji: 'sha', type: 'yoon', strokes: 4, guide: 'Huruf し + や kecil', tip: 'Kombinasi SHI dan YA' },
+            { char: 'しゅ', romaji: 'shu', type: 'yoon', strokes: 3, guide: 'Huruf し + ゆ kecil', tip: 'Kombinasi SHI dan YU' },
+            { char: 'しょ', romaji: 'sho', type: 'yoon', strokes: 3, guide: 'Huruf し + よ kecil', tip: 'Kombinasi SHI dan YO' },
+            { char: 'ちゃ', romaji: 'cha', type: 'yoon', strokes: 5, guide: 'Huruf ち + や kecil', tip: 'Kombinasi CHI dan YA' },
+            { char: 'ちゅ', romaji: 'chu', type: 'yoon', strokes: 4, guide: 'Huruf ち + ゆ kecil', tip: 'Kombinasi CHI dan YU' },
+            { char: 'ちょ', romaji: 'cho', type: 'yoon', strokes: 4, guide: 'Huruf ち + よ kecil', tip: 'Kombinasi CHI dan YO' },
+            { char: 'にゃ', romaji: 'nya', type: 'yoon', strokes: 6, guide: 'Huruf に + や kecil', tip: 'Kombinasi NI dan YA' },
+            { char: 'にゅ', romaji: 'nyu', type: 'yoon', strokes: 5, guide: 'Huruf に + ゆ kecil', tip: 'Kombinasi NI dan YU' },
+            { char: 'にょ', romaji: 'nyo', type: 'yoon', strokes: 5, guide: 'Huruf に + よ kecil', tip: 'Kombinasi NI dan YO' },
+            { char: 'ひゃ', romaji: 'hya', type: 'yoon', strokes: 4, guide: 'Huruf ひ + や kecil', tip: 'Kombinasi HI dan YA' },
+            { char: 'ひゅ', romaji: 'hyu', type: 'yoon', strokes: 3, guide: 'Huruf ひ + ゆ kecil', tip: 'Kombinasi HI dan YU' },
+            { char: 'ひょ', romaji: 'hyo', type: 'yoon', strokes: 3, guide: 'Huruf ひ + よ kecil', tip: 'Kombinasi HI dan YO' },
+            { char: 'みゃ', romaji: 'mya', type: 'yoon', strokes: 5, guide: 'Huruf み + や kecil', tip: 'Kombinasi MI dan YA' },
+            { char: 'みゅ', romaji: 'myu', type: 'yoon', strokes: 4, guide: 'Huruf み + ゆ kecil', tip: 'Kombinasi MI dan YU' },
+            { char: 'みょ', romaji: 'myo', type: 'yoon', strokes: 4, guide: 'Huruf み + よ kecil', tip: 'Kombinasi MI dan YO' },
+            { char: 'りゃ', romaji: 'rya', type: 'yoon', strokes: 5, guide: 'Huruf り + や kecil', tip: 'Kombinasi RI dan YA' },
+            { char: 'りゅ', romaji: 'ryu', type: 'yoon', strokes: 4, guide: 'Huruf り + ゆ kecil', tip: 'Kombinasi RI dan YU' },
+            { char: 'りょ', romaji: 'ryo', type: 'yoon', strokes: 4, guide: 'Huruf り + よ kecil', tip: 'Kombinasi RI dan YO' },
+            { char: 'ぎゃ', romaji: 'gya', type: 'yoon', strokes: 9, guide: 'Huruf ぎ + や kecil', tip: 'Kombinasi GI dan YA' },
+            { char: 'ぎゅ', romaji: 'gyu', type: 'yoon', strokes: 8, guide: 'Huruf ぎ + ゆ kecil', tip: 'Kombinasi GI dan YU' },
+            { char: 'ぎょ', romaji: 'gyo', type: 'yoon', strokes: 8, guide: 'Huruf ぎ + よ kecil', tip: 'Kombinasi GI dan YO' },
+            { char: 'じゃ', romaji: 'ja', type: 'yoon', strokes: 6, guide: 'Huruf じ + や kecil', tip: 'Kombinasi JI dan YA' },
+            { char: 'じゅ', romaji: 'ju', type: 'yoon', strokes: 5, guide: 'Huruf じ + ゆ kecil', tip: 'Kombinasi JI dan YU' },
+            { char: 'じょ', romaji: 'jo', type: 'yoon', strokes: 5, guide: 'Huruf じ + よ kecil', tip: 'Kombinasi JI dan YO' },
+            { char: 'びゃ', romaji: 'bya', type: 'yoon', strokes: 6, guide: 'Huruf び + や kecil', tip: 'Kombinasi BI dan YA' },
+            { char: 'びゅ', romaji: 'byu', type: 'yoon', strokes: 5, guide: 'Huruf び + ゆ kecil', tip: 'Kombinasi BI dan YU' },
+            { char: 'びょ', romaji: 'byo', type: 'yoon', strokes: 5, guide: 'Huruf び + よ kecil', tip: 'Kombinasi BI dan YO' },
+            { char: 'ぴゃ', romaji: 'pya', type: 'yoon', strokes: 5, guide: 'Huruf ぴ + や kecil', tip: 'Kombinasi PI dan YA' },
+            { char: 'ぴゅ', romaji: 'pyu', type: 'yoon', strokes: 4, guide: 'Huruf ぴ + ゆ kecil', tip: 'Kombinasi PI dan YU' },
+            { char: 'ぴょ', romaji: 'pyo', type: 'yoon', strokes: 4, guide: 'Huruf ぴ + よ kecil', tip: 'Kombinasi PI dan YO' }
+        ];
+
+        // Extended Stroke Badges Map (Format NHK Style)
+        const strokeColors = ['#e63946', '#2563eb', '#16a34a', '#d97706', '#9333ea', '#0891b2'];
+        const nhkStrokeData = {
+            'あ': [
+                { num: 1, top: '32%', left: '26%', color: strokeColors[0] },
+                { num: 2, top: '15%', left: '42%', color: strokeColors[1] },
+                { num: 3, top: '28%', left: '62%', color: strokeColors[2] }
+            ],
+            'い': [
+                { num: 1, top: '25%', left: '28%', color: strokeColors[0] },
+                { num: 2, top: '30%', left: '65%', color: strokeColors[1] }
+            ],
+            'う': [
+                { num: 1, top: '18%', left: '45%', color: strokeColors[0] },
+                { num: 2, top: '38%', left: '32%', color: strokeColors[1] }
+            ],
+            'え': [
+                { num: 1, top: '16%', left: '40%', color: strokeColors[0] },
+                { num: 2, top: '35%', left: '30%', color: strokeColors[1] }
+            ],
+            'お': [
+                { num: 1, top: '30%', left: '25%', color: strokeColors[0] },
+                { num: 2, top: '18%', left: '48%', color: strokeColors[1] },
+                { num: 3, top: '35%', left: '72%', color: strokeColors[2] }
+            ],
+            'か': [
+                { num: 1, top: '28%', left: '28%', color: strokeColors[0] },
+                { num: 2, top: '20%', left: '55%', color: strokeColors[1] },
+                { num: 3, top: '32%', left: '72%', color: strokeColors[2] }
+            ],
+            'き': [
+                { num: 1, top: '25%', left: '30%', color: strokeColors[0] },
+                { num: 2, top: '38%', left: '30%', color: strokeColors[1] },
+                { num: 3, top: '18%', left: '50%', color: strokeColors[2] },
+                { num: 4, top: '65%', left: '40%', color: strokeColors[3] }
+            ]
+        };
+
+        let currentStrokeStep = 0;
+
+        // Render Badges Nomor Goresan pada Modal
+        function renderNHKBadges(charSymbol) {
+            const badgesLayer = document.getElementById('stroke-badges-layer');
+            if (!badgesLayer) return;
+            badgesLayer.innerHTML = '';
+
+            const badgeList = nhkStrokeData[charSymbol] || [];
+            badgeList.forEach(b => {
+                const badge = document.createElement('div');
+                badge.className = 'absolute w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center shadow-md transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300';
+                badge.style.backgroundColor = b.color;
+                badge.style.top = b.top;
+                badge.style.left = b.left;
+                badge.innerText = b.num;
+                badgesLayer.appendChild(badge);
+            });
+        }
+
+        // Buka Pop-up Modal Karakter
+        function openCharModal(charSymbol) {
+            const item = hiraganaData.find(d => d.char === charSymbol);
+            if (!item) return;
+
+            state.currentActiveChar = item;
+            currentStrokeStep = 0;
+
+            const categoryEl = document.getElementById('modal-category');
+            if (categoryEl) categoryEl.innerText = `Kategori: ${item.type}`;
+            
+            const charEl = document.getElementById('modal-char');
+            if (charEl) charEl.innerText = item.char;
+            
+            const nhkCharEl = document.getElementById('modal-char-nhk');
+            if (nhkCharEl) nhkCharEl.innerText = item.char;
+            
+            const romajiEl = document.getElementById('modal-romaji');
+            if (romajiEl) romajiEl.innerText = item.romaji;
+            
+            const strokesEl = document.getElementById('modal-strokes');
+            if (strokesEl) strokesEl.innerText = `${item.strokes} Goresan Penulisan`;
+            
+            const tipEl = document.getElementById('modal-tip');
+            if (tipEl) tipEl.innerText = `Tips Ingatan: ${item.tip}`;
+            
+            const guideEl = document.getElementById('stroke-guide-text');
+            if (guideEl) guideEl.innerText = `Urutan: ${item.guide}`;
+            
+            const indicatorEl = document.getElementById('stroke-step-indicator');
+            if (indicatorEl) indicatorEl.innerText = `Semua ${item.strokes} Goresan`;
+
+            renderNHKBadges(item.char);
+
+            const modal = document.getElementById('char-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    if (modal.firstElementChild) {
+                        modal.firstElementChild.classList.remove('scale-95');
+                        modal.firstElementChild.classList.add('scale-100');
+                    }
+                }, 10);
+            }
+
+            speakHiragana(item.char);
+        }
+
+        function nextStrokeStep() {
+            if (!state.currentActiveChar) return;
+            const total = state.currentActiveChar.strokes;
+            currentStrokeStep = (currentStrokeStep + 1) % (total + 1);
+            updateStrokeStepUI();
+        }
+
+        function prevStrokeStep() {
+            if (!state.currentActiveChar) return;
+            const total = state.currentActiveChar.strokes;
+            currentStrokeStep = (currentStrokeStep - 1 + total + 1) % (total + 1);
+            updateStrokeStepUI();
+        }
+
+        function updateStrokeStepUI() {
+            const indicator = document.getElementById('stroke-step-indicator');
+            const badges = document.querySelectorAll('#stroke-badges-layer div');
+
+            if (!state.currentActiveChar) return;
+
+            if (currentStrokeStep === 0) {
+                if (indicator) indicator.innerText = `Semua ${state.currentActiveChar.strokes} Goresan`;
+                badges.forEach(b => b.style.opacity = '1');
+            } else {
+                if (indicator) indicator.innerText = `Langkah Goresan ${currentStrokeStep}`;
+                badges.forEach((b, idx) => {
+                    b.style.opacity = (idx + 1) === currentStrokeStep ? '1' : '0.2';
+                });
+            }
+        }
+
+        function playCurrentAudio() {
+            if (state.currentActiveChar) {
+                speakHiragana(state.currentActiveChar.char);
+            }
+        }
+
+        function handleModalBackdropClick(event) {
+            const modalCard = document.getElementById('char-modal-card');
+            if (modalCard && !modalCard.contains(event.target)) {
+                closeCharModal();
+            }
+        }
+
+        function closeCharModal() {
+            const modal = document.getElementById('char-modal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            modal.classList.add('opacity-0');
+            if (modal.firstElementChild) {
+                modal.firstElementChild.classList.remove('scale-100');
+                modal.firstElementChild.classList.add('scale-95');
+            }
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeCharModal();
+        });
+
+        // ==========================================
+        // SWITCH TAB DAN RENDER TABEL
+        // ==========================================
+        function switchTab(tabName) {
+            state.activeTab = tabName;
+            
+            const btnTable = document.getElementById('btn-tab-table');
+            const btnQuiz = document.getElementById('btn-tab-quiz');
+
+            if (tabName === 'table') {
+                if (btnTable) btnTable.className = "px-3 sm:px-5 py-2 rounded-lg transition-all duration-200 bg-white text-red-600 shadow-sm font-bold flex items-center space-x-2";
+                if (btnQuiz) btnQuiz.className = "px-3 sm:px-5 py-2 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-2";
+                renderTableModule();
+            } else {
+                if (btnQuiz) btnQuiz.className = "px-3 sm:px-5 py-2 rounded-lg transition-all duration-200 bg-white text-red-600 shadow-sm font-bold flex items-center space-x-2";
+                if (btnTable) btnTable.className = "px-3 sm:px-5 py-2 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-2";
+                
+                if (state.halaman === 'login') renderLogin();
+                else if (state.halaman === 'quiz') renderQuiz();
+                else if (state.halaman === 'result') renderResult();
+                else if (state.halaman === 'cheating') renderCheatingWarning();
+            }
+        }
+
+        function renderTableModule() {
+            const app = document.getElementById('app');
+            if (!app) return;
+            
+            let filteredData = hiraganaData;
+            if (state.filterTable !== 'all') {
+                filteredData = hiraganaData.filter(d => d.type === state.filterTable);
+            }
+
+            app.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Title & Banner -->
+                    <div class="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-red-200 relative overflow-hidden">
+                        <div class="relative z-10 max-w-2xl">
+                            <span class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Modul Pembelajaran</span>
+                            <h2 class="text-2xl sm:text-4xl font-extrabold mt-3">Tabel Kartu Hiragana Interaktif</h2>
+                            <p class="text-red-100 text-sm sm:text-base mt-2">Klik pada setiap kartu huruf untuk mendengarkan pelafalan audio asli, melihat panduan jumlah goresan (stroke order), serta tips mudah mengingatnya.</p>
+                        </div>
+                        <div class="absolute -right-6 -bottom-10 opacity-15 text-[180px] font-jp font-bold select-none pointer-events-none">
+                            ひらがな
+                        </div>
+                    </div>
+
+                    <!-- Filter Category Buttons -->
+                    <div class="flex flex-wrap items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+                        <span class="text-xs font-bold text-slate-400 px-3 uppercase">Filter:</span>
+                        <button onclick="filterHiragana('all')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${state.filterTable === 'all' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'}">Semua Huruf (${hiraganaData.length})</button>
+                        <button onclick="filterHiragana('basic')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${state.filterTable === 'basic' ? 'bg-red-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'}">Dasar / Gojūon (46)</button>
+                        <button onclick="filterHiragana('dakuon')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${state.filterTable === 'dakuon' ? 'bg-amber-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'}">Tenten / Dakuon (20)</button>
+                        <button onclick="filterHiragana('handakuon')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${state.filterTable === 'handakuon' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'}">Maru / Handakuon (5)</button>
+                        <button onclick="filterHiragana('yoon')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${state.filterTable === 'yoon' ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'}">Kombinasi / Yōon</button>
+                    </div>
+
+                    <!-- Cards Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+                        ${filteredData.map(item => `
+                            <div onclick="openCharModal('${item.char}')" class="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer card-hover relative group">
+                                <span class="absolute top-2 left-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-red-500 transition-colors">${item.type}</span>
+                                <button onclick="event.stopPropagation(); speakHiragana('${item.char}')" title="Putar Suara" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-50 group-hover:bg-red-50 text-slate-400 group-hover:text-red-500 flex items-center justify-center text-xs transition-all">
+                                    <i class="fa-solid fa-volume-low"></i>
+                                </button>
+                                <div class="font-jp text-5xl sm:text-6xl font-bold text-slate-800 my-3 group-hover:scale-110 transition-transform">
+                                    ${item.char}
+                                </div>
+                                <div class="bg-slate-100 group-hover:bg-red-50 px-3 py-1 rounded-full text-xs font-extrabold text-slate-600 group-hover:text-red-600 capitalize">
+                                    ${item.romaji}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterHiragana(category) {
+            state.filterTable = category;
+            renderTableModule();
+        }
+
+        // ==========================================
+        // MODUL ASESMEN UJIAN (60 SOAL)
+        // ==========================================
+        function generate60Questions() {
+            const basicPool = shuffle(hiraganaData.filter(d => d.type === 'basic')).slice(0, 30);
+            const dakuonPool = shuffle(hiraganaData.filter(d => d.type === 'dakuon')).slice(0, 15);
+            const handakuonPool = shuffle(hiraganaData.filter(d => d.type === 'handakuon')).slice(0, 5);
+            const yoonPool = shuffle(hiraganaData.filter(d => d.type === 'yoon')).slice(0, 10);
+
+            return shuffle([...basicPool, ...dakuonPool, ...handakuonPool, ...yoonPool]);
+        }
+
+        function generateOptions(correctRomaji) {
+            const allRomaji = Array.from(new Set(hiraganaData.map(d => d.romaji))).filter(r => r !== correctRomaji);
+            const distractors = shuffle(allRomaji).slice(0, 4);
+            const options = shuffle([correctRomaji, ...distractors]);
+            const labels = ['A', 'B', 'C', 'D', 'E'];
+
+            return options.map((val, idx) => ({
+                label: labels[idx],
+                value: val
             }));
         }
 
-        // Fungsi untuk menginisialisasi soal ujian
         function initializeQuiz() {
-            // Acak urutan 30 soal
-            const shuffledSoal = shuffle([...soalData]).slice(0, TOTAL_SOAL);
-            state.soalQuiz = shuffledSoal.map(soal => ({
-                ...soal,
-                options: generateOptions(soal.reading),
-                isAnswered: false,
+            const questions = generate60Questions();
+            state.soalQuiz = questions.map(q => ({
+                ...q,
+                options: generateOptions(q.romaji),
                 userAnswer: null
             }));
             state.skor = 0;
             state.soalSaatIni = 0;
-            state.jawabanDipilih = null;
             state.isJawabanDiberi = false;
         }
 
-        // --- RENDER UI ---
-
-        const appDiv = document.getElementById('app');
-
-        // Fungsi untuk merender komponen tertentu
-        function render() {
-            appDiv.innerHTML = '';
-            // Render Header (hanya saat halaman quiz atau result)
-            if (state.halaman === 'quiz' || state.halaman === 'result') {
-                renderHeader();
-            }
-
-            // Render konten utama berdasarkan state.halaman
-            if (state.halaman === 'login') {
-                renderLogin();
-            } else if (state.halaman === 'quiz') {
-                renderQuiz();
-            } else if (state.halaman === 'result') {
-                renderResult();
-            } else if (state.halaman === 'cheating') {
-                renderCheatingWarning();
-            }
-        }
-
-        // Render Header Skor dan Progress
-        function renderHeader() {
-            const header = document.createElement('header');
-            header.className = 'w-full max-w-4xl fixed top-0 left-1/2 transform -translate-x-1/2 bg-white shadow-lg p-4 rounded-b-xl z-10';
-            header.innerHTML = `
-                <div class="flex justify-between items-center text-gray-700 font-semibold">
-                    <div class="flex items-center space-x-4">
-                        <span class="text-lg">NIS: ${state.nis}</span>
-                        <span class="text-lg">Soal: ${state.soalSaatIni + 1}/${TOTAL_SOAL}</span>
-                    </div>
-                    <div class="text-2xl text-green-600">
-                        Skor Benar: ${state.skor}
-                    </div>
-                </div>
-                ${state.halaman === 'quiz' ? `
-                    <div class="mt-3">
-                        <div id="timer-bar-container" class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div id="timer-bar" class="h-full bg-red-500 rounded-full timer-bar" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                ` : ''}
-            `;
-            document.body.prepend(header);
-        }
-
-        // Render Halaman Login
         function renderLogin() {
-            const loginCard = document.createElement('div');
-            loginCard.className = 'w-full max-w-md bg-white p-8 shadow-2xl rounded-xl transition duration-500 ease-in-out transform hover:scale-[1.02]';
-            loginCard.innerHTML = `
-                <h1 class="text-3xl font-bold text-center text-indigo-600 mb-6">Asesmen Hiragana</h1>
-                <p class="text-center text-gray-500 mb-8">Silakan masuk dengan NIS Anda untuk memulai ujian. Password default: <span class="font-mono bg-gray-100 px-2 py-1 rounded">123456</span></p>
-
-                <form id="login-form" class="space-y-6">
-                    <div>
-                        <label for="nis" class="block text-sm font-medium text-gray-700">Nomor Induk Siswa (NIS)</label>
-                        <input type="text" id="nis" name="nis" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Masukkan NIS Anda">
+            const app = document.getElementById('app');
+            if (!app) return;
+            app.innerHTML = `
+                <div class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl font-bold font-jp mx-auto mb-4">
+                            試
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800">Asesmen Hiragana</h2>
+                        <p class="text-xs text-slate-500 mt-2">Total 60 Soal Ujian Acak. Password default: <span class="font-mono bg-slate-100 px-2 py-0.5 rounded text-red-600 font-bold">123456</span></p>
                     </div>
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" id="password" name="password" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Password (default: 123456)">
-                    </div>
-                    <div id="login-error" class="text-red-500 text-sm hidden"></div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
-                        Mulai Asesmen
-                    </button>
-                </form>
-            `;
-            appDiv.appendChild(loginCard);
 
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
-        }
-
-        // Render Halaman Quiz
-        function renderQuiz() {
-            const currentSoalIndex = state.soalSaatIni;
-            const soal = state.soalQuiz[currentSoalIndex];
-
-            // Tambahkan padding atas untuk mengimbangi fixed header
-            appDiv.className = 'flex flex-col flex-grow items-center justify-center p-4 pt-32';
-
-            const quizCard = document.createElement('div');
-            quizCard.className = 'w-full max-w-4xl bg-white p-8 shadow-2xl rounded-xl';
-            quizCard.innerHTML = `
-                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Soal ke ${currentSoalIndex + 1} dari ${TOTAL_SOAL}</h2>
-
-                <!-- Area Hiragana -->
-                <div class="text-center py-10 bg-indigo-50 rounded-lg mb-8 shadow-inner">
-                    <div class="hiragana-char text-indigo-700">${soal.char}</div>
-                    <p class="text-lg text-gray-600 mt-2">Pilih bacaan yang benar:</p>
-                </div>
-
-                <!-- Opsi Jawaban -->
-                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${soal.options.map(option => `
-                        <button 
-                            data-value="${option.value}"
-                            class="option-button w-full flex items-center p-4 border-2 border-gray-300 rounded-xl text-left bg-gray-50 hover:bg-indigo-100 transition duration-150 ease-in-out ${state.isJawabanDiberi ? 'disabled' : ''}"
-                            ${state.isJawabanDiberi ? 'disabled' : ''}
-                        >
-                            <span class="text-xl font-bold w-8 text-center">${option.label}.</span>
-                            <span class="ml-4 text-2xl font-medium">${option.display}</span>
+                    <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
+                        <div>
+                            <label for="nis" class="block text-xs font-bold text-slate-600 uppercase mb-2">Nomor Induk Siswa (NIS)</label>
+                            <input type="text" id="nis" required placeholder="Masukkan NIS Anda" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-semibold text-slate-800 text-sm">
+                        </div>
+                        <div>
+                            <label for="password" class="block text-xs font-bold text-slate-600 uppercase mb-2">Password</label>
+                            <input type="password" id="password" required placeholder="Password default: 123456" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-semibold text-slate-800 text-sm">
+                        </div>
+                        <div id="login-error" class="text-red-500 text-xs font-semibold hidden bg-red-50 p-3 rounded-xl border border-red-100"></div>
+                        <button type="submit" class="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-200 transition-all hover:scale-[1.02] active:scale-95 text-sm">
+                            Mulai Asesmen (60 Soal)
                         </button>
-                    `).join('')}
+                    </form>
                 </div>
-
-                <!-- Feedback Area -->
-                <div id="feedback-area" class="mt-8"></div>
             `;
-            appDiv.appendChild(quizCard);
-
-            // Tambahkan event listener untuk opsi jawaban
-            document.querySelectorAll('#options-container button').forEach(button => {
-                button.addEventListener('click', handleAnswer);
-            });
-
-            // Mulai Timer
-            startTimer();
         }
 
-        // Render Halaman Hasil
-        function renderResult() {
-            // Hapus padding atas tambahan dari quiz
-            appDiv.className = 'flex flex-col flex-grow items-center justify-center p-4';
-            
-            const resultCard = document.createElement('div');
-            resultCard.className = 'w-full max-w-xl bg-white p-10 shadow-2xl rounded-xl text-center';
-
-            const percentage = ((state.skor / TOTAL_SOAL) * 100).toFixed(1);
-            const isLulus = state.skor > (TOTAL_SOAL / 2); // Kriteria kelulusan sederhana (> 50%)
-
-            resultCard.innerHTML = `
-                <h1 class="text-4xl font-bold mb-4 ${isLulus ? 'text-green-600' : 'text-red-600'}">
-                    ${isLulus ? 'Selamat, Anda Lulus!' : 'Hasil Asesmen Selesai'}
-                </h1>
-                <p class="text-xl text-gray-600 mb-8">NIS: ${state.nis}</p>
-                
-                <div class="bg-indigo-50 p-6 rounded-lg mb-8">
-                    <p class="text-6xl font-extrabold text-indigo-700">${state.skor}</p>
-                    <p class="text-lg text-gray-700 mt-2">Jawaban Benar dari ${TOTAL_SOAL} Soal</p>
-                </div>
-                
-                <p class="text-3xl font-semibold text-gray-800 mb-4">Persentase: ${percentage}%</p>
-                
-                <button onclick="window.location.reload()" class="mt-6 py-3 px-8 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150">
-                    Selesai / Ulangi Asesmen
-                </button>
-            `;
-            appDiv.appendChild(resultCard);
-
-            // Bersihkan header
-            document.querySelector('header')?.remove();
-        }
-
-        // Render Halaman Peringatan Kecurangan
-        function renderCheatingWarning() {
-            // Hapus padding atas tambahan dari quiz
-            appDiv.className = 'flex flex-col flex-grow items-center justify-center p-4';
-
-            const warningCard = document.createElement('div');
-            warningCard.className = 'w-full max-w-lg bg-red-100 border-2 border-red-500 p-10 shadow-2xl rounded-xl text-center';
-            warningCard.innerHTML = `
-                <div class="text-6xl mb-4" role="img" aria-label="Warning">&#9888;&#65039;</div>
-                <h1 class="text-3xl font-bold text-red-700 mb-4">PERINGATAN! Asesmen Dibatalkan.</h1>
-                <p class="text-lg text-red-600 mb-6">Anda terdeteksi berpindah tab atau keluar dari jendela asesmen. Aturan ujian melarang hal ini.</p>
-                <p class="text-md text-red-600 mb-8 font-semibold">Anda harus mengulang dari awal.</p>
-                <button onclick="resetApp('cheating')" class="py-3 px-8 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150">
-                    Kembali ke Halaman Login
-                </button>
-            `;
-            appDiv.appendChild(warningCard);
-        }
-
-        // --- HANDLER EVENT ---
-
-        // Handler Login
         function handleLogin(event) {
             event.preventDefault();
-            const nisInput = document.getElementById('nis').value;
-            const passwordInput = document.getElementById('password').value;
+            const nisInput = document.getElementById('nis').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
             const errorDiv = document.getElementById('login-error');
 
-            if (passwordInput === PASSWORD_DEFAULT && nisInput.trim() !== '') {
-                state.nis = nisInput.trim();
+            if (passwordInput === PASSWORD_DEFAULT && nisInput !== '') {
+                state.nis = nisInput;
                 initializeQuiz();
                 state.halaman = 'quiz';
-                render();
+                renderQuiz();
             } else {
-                errorDiv.textContent = 'NIS tidak boleh kosong atau Password salah. (Password default: 123456)';
+                errorDiv.textContent = 'NIS tidak boleh kosong dan Password harus sesuai! (Default: 123456)';
                 errorDiv.classList.remove('hidden');
             }
         }
 
-        // Handler Jawaban
-        function handleAnswer(event) {
-            if (state.isJawabanDiberi) return; // Mencegah klik ganda
+        function renderQuiz() {
+            const app = document.getElementById('app');
+            if (!app) return;
+            const current = state.soalQuiz[state.soalSaatIni];
 
-            const selectedButton = event.currentTarget;
-            const selectedValue = selectedButton.dataset.value;
-            const currentSoal = state.soalQuiz[state.soalSaatIni];
-            const isCorrect = selectedValue === currentSoal.reading;
+            app.innerHTML = `
+                <div class="max-w-3xl mx-auto space-y-6">
+                    <!-- Progress Bar Header -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs font-extrabold bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg">NIS: ${state.nis}</span>
+                            <span class="text-xs font-extrabold bg-red-50 text-red-600 px-3 py-1.5 rounded-lg">Soal: ${state.soalSaatIni + 1} / ${TOTAL_SOAL}</span>
+                        </div>
+                        <div class="text-sm font-bold text-slate-700">
+                            Skor Benar: <span class="text-emerald-600 text-lg">${state.skor}</span>
+                        </div>
+                    </div>
 
-            // Hentikan timer dan atur state
+                    <!-- Timer Bar -->
+                    <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div id="quiz-timer-bar" class="h-full bg-red-500 timer-bar-anim" style="width: 100%; animation-duration: ${WAKTU_PER_SOAL}s;"></div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl text-center space-y-6">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Bacalah Aksara Berikut:</span>
+                        
+                        <div class="font-jp text-9xl font-bold text-slate-800 py-4 select-none">
+                            ${current.char}
+                        </div>
+
+                        <!-- Options Grid -->
+                        <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                            ${current.options.map(opt => `
+                                <button onclick="handleAnswer('${opt.value}', this)" class="p-4 rounded-2xl border-2 border-slate-200 font-bold text-lg text-slate-700 hover:border-red-500 hover:bg-red-50/50 transition-all text-left flex items-center space-x-3 group">
+                                    <span class="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-red-500 group-hover:text-white flex items-center justify-center text-xs transition-colors">${opt.label}</span>
+                                    <span class="capitalize">${opt.value}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <div id="feedback-area" class="min-h-[48px]"></div>
+                    </div>
+                </div>
+            `;
+
+            startTimer();
+        }
+
+        function handleAnswer(selectedValue, buttonEl) {
+            if (state.isJawabanDiberi) return;
+
             clearTimeout(state.timerTimeout);
-            clearInterval(state.timerInterval);
             state.isJawabanDiberi = true;
-            currentSoal.userAnswer = selectedValue;
-
-            // Beri feedback visual dan update skor
+            
+            const current = state.soalQuiz[state.soalSaatIni];
+            const isCorrect = selectedValue === current.romaji;
             const feedbackArea = document.getElementById('feedback-area');
-            const feedbackMessage = document.createElement('p');
-            feedbackMessage.className = 'text-center text-xl font-bold mt-4 p-4 rounded-lg';
+
+            // Nonaktifkan semua tombol
+            const buttons = document.querySelectorAll('#options-container button');
+            buttons.forEach(b => b.disabled = true);
 
             if (isCorrect) {
                 state.skor++;
-                feedbackMessage.classList.add('bg-green-100', 'text-green-700');
-                feedbackMessage.textContent = 'Jawaban Anda Benar! Skor bertambah.';
-                selectedButton.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                buttonEl.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
+                feedbackArea.innerHTML = `<div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl font-bold text-sm">Jawaban Benar! 🎉</div>`;
             } else {
-                feedbackMessage.classList.add('bg-red-100', 'text-red-700');
-                feedbackMessage.textContent = 'Jawaban Anda Salah. Lanjutkan ke soal berikutnya.';
-                selectedButton.classList.add('bg-red-500', 'text-white', 'border-red-500');
-                
-                // TIDAK menampilkan jawaban yang benar, sesuai permintaan.
+                buttonEl.classList.add('bg-red-500', 'text-white', 'border-red-500');
+                feedbackArea.innerHTML = `<div class="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl font-bold text-sm">Jawaban Salah. Lanjut ke soal berikutnya...</div>`;
             }
 
-            feedbackArea.appendChild(feedbackMessage);
-            
-            // Nonaktifkan semua tombol opsi setelah menjawab
-            document.querySelectorAll('#options-container button').forEach(btn => btn.disabled = true);
-
-            // Lanjut ke soal berikutnya setelah 1.5 detik
             setTimeout(nextSoal, 1500);
         }
 
-        // Lanjut ke Soal Berikutnya
         function nextSoal() {
             if (state.soalSaatIni < TOTAL_SOAL - 1) {
                 state.soalSaatIni++;
-                state.jawabanDipilih = null;
                 state.isJawabanDiberi = false;
-                // Hapus header lama sebelum render baru
-                document.querySelector('header')?.remove();
-                render();
+                renderQuiz();
             } else {
                 state.halaman = 'result';
-                // Hapus header lama sebelum render baru
-                document.querySelector('header')?.remove();
-                render();
+                renderResult();
             }
         }
-
-        // --- FUNGSI TIMER DAN ANTI-CHEATING ---
 
         function startTimer() {
-            // Bersihkan timer lama jika ada
             clearTimeout(state.timerTimeout);
-            clearInterval(state.timerInterval);
-
-            const timerBar = document.getElementById('timer-bar');
-            if (!timerBar) return; // Pastikan elemen ada
-
-            // Atur properti animasi CSS
-            timerBar.style.width = '100%';
-            timerBar.style.animationDuration = `${WAKTU_PER_SOAL}s`;
-            timerBar.style.animationPlayState = 'running';
-
-            // Timeout ketika waktu habis (paling akhir)
             state.timerTimeout = setTimeout(() => {
-                // Pindah ke soal berikutnya secara otomatis jika waktu habis
                 const feedbackArea = document.getElementById('feedback-area');
                 if (feedbackArea) {
-                    feedbackArea.innerHTML = `
-                        <p class="text-center text-xl font-bold mt-4 p-4 rounded-lg bg-yellow-100 text-yellow-700">
-                            Waktu Habis! Lanjut ke soal berikutnya.
-                        </p>
-                    `;
+                    feedbackArea.innerHTML = `<div class="p-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl font-bold text-sm">Waktu Habis! ⏰ Lanjut soal berikutnya...</div>`;
                 }
-                
-                // Nonaktifkan tombol
-                document.querySelectorAll('#options-container button').forEach(btn => btn.disabled = true);
-                
-                // Lanjut setelah 1.5 detik
                 setTimeout(nextSoal, 1500);
             }, WAKTU_PER_SOAL * 1000);
-
-            // Interval untuk mengupdate waktu sisa (jika perlu)
-            // state.timerInterval = setInterval(() => {
-            //     // Hanya diperlukan jika ingin menampilkan angka detik,
-            //     // Tapi karena sudah menggunakan CSS animation, interval ini tidak wajib
-            //     // Kecuali untuk keperluan debugging/tambahan fitur
-            // }, 1000);
         }
 
-        // Reset Aplikasi ke Halaman Login
-        function resetApp(reason = 'logout') {
-            clearTimeout(state.timerTimeout);
-            clearInterval(state.timerInterval);
-            
-            // Hapus header lama
-            document.querySelector('header')?.remove();
+        function renderResult() {
+            const app = document.getElementById('app');
+            if (!app) return;
 
-            state = {
-                nis: null,
-                halaman: reason === 'cheating' ? 'cheating' : 'login',
-                soalSaatIni: 0,
-                skor: 0,
-                jawabanDipilih: null,
-                soalQuiz: [],
-                timerInterval: null,
-                timerTimeout: null,
-                waktuSisa: WAKTU_PER_SOAL,
-                isCheating: false,
-                isJawabanDiberi: false
-            };
-            // Panggil render() setelah state direset, yang akan menampilkan halaman cheating/login
-            render();
+            const percentage = ((state.skor / TOTAL_SOAL) * 100).toFixed(1);
+            const isLulus = state.skor >= (TOTAL_SOAL / 2);
+
+            app.innerHTML = `
+                <div class="max-w-xl mx-auto bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-2xl text-center space-y-6">
+                    <div class="w-20 h-20 mx-auto rounded-full ${isLulus ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} flex items-center justify-center text-4xl">
+                        <i class="${isLulus ? 'fa-solid fa-trophy' : 'fa-solid fa-circle-xmark'}"></i>
+                    </div>
+
+                    <div>
+                        <h2 class="text-3xl font-extrabold ${isLulus ? 'text-emerald-600' : 'text-slate-800'}">
+                            ${isLulus ? 'Selamat, Anda Lulus!' : 'Ujian Selesai'}
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">Hasil Rekapitulasi Asesmen Hiragana (NIS: ${state.nis})</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-2">
+                        <div class="text-5xl font-extrabold text-red-500">${state.skor} / ${TOTAL_SOAL}</div>
+                        <div class="text-sm font-bold text-slate-600">Jawaban Benar (${percentage}%)</div>
+                    </div>
+
+                    <button onclick="window.location.reload()" class="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-200 transition-all hover:scale-105 active:scale-95">
+                        Kembali ke Halaman Utama
+                    </button>
+                </div>
+            `;
         }
 
+        function renderCheatingWarning() {
+            const app = document.getElementById('app');
+            if (!app) return;
 
-        // --- LOGIKA ANTI-CHEATING (Pindah Tab) ---
-        
-        let blurTime = 0;
-        
-        // Handler ketika jendela kehilangan fokus (blur)
-        function handleBlur() {
-            if (state.halaman === 'quiz') {
-                state.isCheating = true;
-                blurTime = Date.now();
-                // Opsional: Pause timer saat blur, tapi untuk membatalkan langsung lebih aman.
+            app.innerHTML = `
+                <div class="max-w-md mx-auto bg-red-50 border-2 border-red-500 p-8 rounded-3xl text-center space-y-4">
+                    <div class="text-5xl">⚠️</div>
+                    <h2 class="text-2xl font-bold text-red-700">Asesmen Dibatalkan</h2>
+                    <p class="text-xs text-red-600 leading-relaxed font-semibold">Anda terdeteksi meninggalkan halaman atau berpindah tab ujian. Demi integritas asesmen, sesi ujian dihentikan.</p>
+                    <button onclick="window.location.reload()" class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl shadow-md hover:bg-red-700 transition-all text-xs">
+                        Ulangi Dari Awal
+                    </button>
+                </div>
+            `;
+        }
+
+        // Anti-Cheating Handler
+        window.addEventListener('blur', () => {
+            if (state.activeTab === 'quiz' && state.halaman === 'quiz') {
+                state.halaman = 'cheating';
+                clearTimeout(state.timerTimeout);
+                renderCheatingWarning();
             }
-        }
+        });
 
-        // Handler ketika jendela mendapatkan fokus kembali (focus)
-        function handleFocus() {
-            if (state.halaman === 'quiz' && state.isCheating) {
-                const focusTime = Date.now();
-                const duration = focusTime - blurTime;
-                
-                // Cek apakah jeda terlalu singkat (misal hanya klik menu) atau memang pindah tab
-                // Jika waktu blur lebih dari 200ms, anggap sebagai pindah tab
-                if (duration > 200) {
-                    console.warn("Deteksi kecurangan: Pindah tab terdeteksi. Reset aplikasi.");
-                    // Langsung reset ke halaman peringatan
-                    resetApp('cheating');
-                } else {
-                    // Jeda singkat, anggap bukan pindah tab yang disengaja
-                    state.isCheating = false; 
-                }
-            }
-        }
-
-        // Tambahkan event listener untuk mendeteksi pindah tab/window
-        window.addEventListener('blur', handleBlur);
-        window.addEventListener('focus', handleFocus);
-
-
-        // --- INISIALISASI ---
-
+        // Initial Load Event Listener
         document.addEventListener('DOMContentLoaded', () => {
-            render(); // Mulai dengan halaman login
+            switchTab('table');
         });
     </script>
 </body>
