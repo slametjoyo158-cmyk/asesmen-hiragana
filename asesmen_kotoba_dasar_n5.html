@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesmen Kotoba Dasar N5 - 3 Suku Kata Hiragana</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@500;700;900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        jp: ['Noto Sans JP', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .font-jp {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        @keyframes pulse-scale {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-sugoi {
+            animation: pulse-scale 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 selection:bg-indigo-100 selection:text-indigo-800">
+
+    <!-- Top Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-jp font-bold text-lg shadow-md shadow-indigo-200">
+                    言葉
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg text-slate-800 leading-tight">Asesmen Kotoba N5</h1>
+                    <p class="text-[11px] text-slate-500 font-medium">3 Suku Kata Hiragana • SMK Bhakti Persada</p>
+                </div>
+            </div>
+
+            <!-- Tombol Riwayat Skor (Hanya tampil saat di halaman Login/Hasil) -->
+            <div id="header-actions" class="flex items-center space-x-2">
+                <button onclick="openHistoryModal()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold transition-colors flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
+                    <span>Riwayat Skor</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Kontainer Utama -->
+    <main id="app" class="flex-grow max-w-4xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+        <!-- Konten dirender dinamis oleh JavaScript -->
+    </main>
+
+    <!-- Modal Custom Notifikasi (Pengganti alert()) -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 text-center transform scale-95 transition-transform duration-200" id="custom-modal-box">
+            <div id="modal-icon" class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4"></div>
+            <h3 id="modal-title" class="text-xl font-extrabold text-slate-800 mb-2">Judul Notifikasi</h3>
+            <p id="modal-message" class="text-sm text-slate-600 leading-relaxed mb-6">Pesan detail notifikasi.</p>
+            <button id="modal-btn" class="w-full py-3.5 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95">
+                Mengerti
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Riwayat Skor -->
+    <div id="history-modal" onclick="if(event.target === this) closeHistoryModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-lg text-slate-800">Riwayat Skor Sesi Ini</h3>
+                        <p class="text-xs text-slate-500">Rumus Skor Akhir: (Benar × 3) + 10</p>
+                    </div>
+                </div>
+                <button onclick="closeHistoryModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div id="history-list" class="py-4 overflow-y-auto flex-grow space-y-3">
+                <!-- Daftar riwayat diisi oleh JS -->
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 text-right">
+                <button onclick="closeHistoryModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. BANK KOSAKATA 3 SUKU KATA HIRAGANA N5 (SUMBER: KOTOBA DASAR 1.PDF)
+        // =========================================================================
+        const kotobaDatabase = [
+            // Kata Ganti & Orang
+            { kana: 'わたし', romaji: 'watashi', arti: 'Saya' },
+            { kana: 'あなた', romaji: 'anata', arti: 'Anda / Kamu' },
+            { kana: 'かのじょ', romaji: 'kanojo', arti: 'Dia (Perempuan)' },
+            // Kata Kerja Dasar (3 Mora / Suku Kata)
+            { kana: 'きます', romaji: 'kimasu', arti: 'Datang' },
+            { kana: 'みます', romaji: 'mimasu', arti: 'Melihat / Menonton' },
+            { kana: 'ねます', romaji: 'nemasu', arti: 'Tidur' },
+            // Kata Sifat (3 Mora / Suku Kata)
+            { kana: 'ふるい', romaji: 'furui', arti: 'Lama / Tua' },
+            { kana: 'わるい', romaji: 'warui', arti: 'Buruk / Jelek' },
+            { kana: 'あつい', romaji: 'atsui', arti: 'Panas (cuaca)' },
+            { kana: 'さむい', romaji: 'samui', arti: 'Dingin (cuaca)' },
+            { kana: 'たかい', romaji: 'takai', arti: 'Tinggi / Mahal' },
+            { kana: 'やすい', romaji: 'yasui', arti: 'Murah' },
+            { kana: 'べんり', romaji: 'benri', arti: 'Praktis / Mudah' },
+            { kana: 'しずか', romaji: 'shizuka', arti: 'Tenang / Sunyi' },
+            // Kata Benda Umum
+            { kana: 'じしょ', romaji: 'jisho', arti: 'Kamus' },
+            { kana: 'くるま', romaji: 'kuruma', arti: 'Mobil' },
+            { kana: 'ごはん', romaji: 'gohan', arti: 'Nasi / Makanan' },
+            { kana: 'じかん', romaji: 'jikan', arti: 'Waktu' },
+            { kana: 'あした', romaji: 'ashita', arti: 'Besok' },
+            { kana: 'きのう', romaji: 'kinou', arti: 'Kemarin' },
+            // Kata Tanya
+            { kana: 'いくら', romaji: 'ikura', arti: 'Berapa harga' },
+            { kana: 'いくつ', romaji: 'ikutsu', arti: 'Berapa banyak' },
+            // Sayuran
+            { kana: 'やさい', romaji: 'yasai', arti: 'Sayuran' },
+            { kana: 'きゅうり', romaji: 'kyuuri', arti: 'Timun' },
+            // Benda di Sekolah & Rumah
+            { kana: 'つくえ', romaji: 'tsukue', arti: 'Meja' },
+            { kana: 'かばん', romaji: 'kaban', arti: 'Tas' },
+            { kana: 'とけい', romaji: 'tokei', arti: 'Jam' },
+            { kana: 'でんわ', romaji: 'denwa', arti: 'Telepon' },
+            { kana: 'かがみ', romaji: 'kagami', arti: 'Cermin' },
+            // Buah-buahan & Kendaraan
+            { kana: 'りんご', romaji: 'ringo', arti: 'Apel' },
+            { kana: 'みかん', romaji: 'mikan', arti: 'Jeruk' },
+            { kana: 'ぶどう', romaji: 'budou', arti: 'Anggur' },
+            { kana: 'いちご', romaji: 'ichigo', arti: 'Stroberi' },
+            { kana: 'すいか', romaji: 'suika', arti: 'Semangka' },
+            { kana: 'でんしゃ', romaji: 'densha', arti: 'Kereta api' }
+        ];
+
+        const TOTAL_SOAL = 30;
+        const TOTAL_WAKTU_DETIK = 15 * 60; // 15 Menit (900 detik)
+
+        // =========================================================================
+        // 2. STATE APLIKASI
+        // =========================================================================
+        let state = {
+            nama: '',
+            nisa: '',
+            halaman: 'login', // 'login' | 'quiz' | 'result'
+            soalList: [],
+            currentIndex: 0,
+            skorMentah: 0,
+            skorPadaSoal15: 0, // Menyimpan skor sebelum masuk soal ke-16 untuk mekanisme reset ke-16
+            isLocked: false,
+            sisaDetik: TOTAL_WAKTU_DETIK,
+            timerInterval: null,
+            riwayatSkor: [] // Disimpan di memori sesi
+        };
+
+        // =========================================================================
+        // 3. FUNGSI UTILITAS
+        // =========================================================================
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function hitungSkorAkhir(skorBenar) {
+            return (skorBenar * 3) + 10;
+        }
+
+        // Membuat 30 soal unik dengan 5 opsi romaji (A-E)
+        function buildQuizQuestions() {
+            const selected = shuffle(kotobaDatabase).slice(0, TOTAL_SOAL);
+            const allRomaji = kotobaDatabase.map(k => k.romaji);
+            const labels = ['A', 'B', 'C', 'D', 'E'];
+
+            return selected.map((item) => {
+                // Ambil 4 pengecoh romaji yang berbeda dari jawaban benar
+                const distractors = shuffle(allRomaji.filter(r => r !== item.romaji)).slice(0, 4);
+                const mixedOptions = shuffle([item.romaji, ...distractors]);
+
+                return {
+                    kana: item.kana,
+                    romaji: item.romaji,
+                    arti: item.arti,
+                    options: mixedOptions.map((val, idx) => ({
+                        label: labels[idx],
+                        value: val
+                    }))
+                };
+            });
+        }
+
+        // =========================================================================
+        // 4. MODAL NOTIFIKASI & RIWAYAT (TANPA alert())
+        // =========================================================================
+        function showCustomNotification({ type, title, message, buttonText, onConfirm }) {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('custom-modal-box');
+            const iconEl = document.getElementById('modal-icon');
+            const titleEl = document.getElementById('modal-title');
+            const msgEl = document.getElementById('modal-message');
+            const btnEl = document.getElementById('modal-btn');
+
+            if (type === 'danger') {
+                iconEl.className = 'w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4 bg-red-100 text-red-600';
+                iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                btnEl.className = 'w-full py-3.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-all active:scale-95';
+            } else if (type === 'warning') {
+                iconEl.className = 'w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4 bg-amber-100 text-amber-600';
+                iconEl.innerHTML = '<i class="fa-solid fa-rotate-left"></i>';
+                btnEl.className = 'w-full py-3.5 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all active:scale-95';
+            } else {
+                iconEl.className = 'w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4 bg-indigo-100 text-indigo-600';
+                iconEl.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+                btnEl.className = 'w-full py-3.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95';
+            }
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            btnEl.textContent = buttonText || 'Lanjutkan';
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+            }, 10);
+
+            btnEl.onclick = () => {
+                modal.classList.add('opacity-0');
+                box.classList.remove('scale-100');
+                box.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    if (typeof onConfirm === 'function') onConfirm();
+                }, 200);
+            };
+        }
+
+        function openHistoryModal() {
+            const modal = document.getElementById('history-modal');
+            const listEl = document.getElementById('history-list');
+
+            if (state.riwayatSkor.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-10 text-slate-400">
+                        <i class="fa-regular fa-folder-open text-4xl mb-3"></i>
+                        <p class="text-sm font-medium">Belum ada riwayat pengerjaan asesmen pada sesi ini.</p>
+                    </div>
+                `;
+            } else {
+                listEl.innerHTML = state.riwayatSkor.map((item, idx) => `
+                    <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-extrabold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">#${state.riwayatSkor.length - idx}</span>
+                                <span class="font-bold text-slate-800 text-sm">${item.nama}</span>
+                                <span class="text-xs text-slate-500">(NISA: ${item.nisa})</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">Benar: <strong class="text-slate-700">${item.skorMentah}/30</strong> • Waktu Selesai: ${item.waktu}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Skor Akhir</span>
+                            <span class="text-2xl font-black text-indigo-600">${item.skorAkhir}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeHistoryModal() {
+            const modal = document.getElementById('history-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        // =========================================================================
+        // 5. LOGIKA TIMER & ANTI-CHEATING (BLUR / PINDAH TAB)
+        // =========================================================================
+        function startGlobalTimer() {
+            clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                if (state.halaman !== 'quiz') {
+                    clearInterval(state.timerInterval);
+                    return;
+                }
+
+                state.sisaDetik--;
+                const timerEl = document.getElementById('timer-display');
+                if (timerEl) {
+                    timerEl.textContent = formatTime(state.sisaDetik);
+                    if (state.sisaDetik <= 60) {
+                        timerEl.classList.add('text-red-600', 'animate-pulse');
+                    }
+                }
+
+                if (state.sisaDetik <= 0) {
+                    clearInterval(state.timerInterval);
+                    finishQuiz('Waktu pengerjaan 15 menit telah habis!');
+                }
+            }, 1000);
+        }
+
+        // Deteksi pindah tab / keluar fokus HANYA saat halaman === 'quiz'
+        // Saat halaman === 'result' (skor akhir), siswa bebas mengambil screenshot!
+        function handleTabViolation() {
+            if (state.halaman === 'quiz') {
+                clearInterval(state.timerInterval);
+                state.halaman = 'login';
+                showCustomNotification({
+                    type: 'danger',
+                    title: 'Pelanggaran Terdeteksi!',
+                    message: 'Anda terdeteksi berpindah tab atau meninggalkan layar ujian saat mengerjakan soal. Sesi di-reset ke halaman login.',
+                    buttonText: 'Kembali ke Login',
+                    onConfirm: () => renderLogin()
+                });
+            }
+        }
+
+        window.addEventListener('blur', handleTabViolation);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && state.halaman === 'quiz') {
+                handleTabViolation();
+            }
+        });
+
+        // =========================================================================
+        // 6. RENDER HALAMAN & ALUR CHECKPOINT LEVEL
+        // =========================================================================
+        function renderLogin() {
+            state.halaman = 'login';
+            clearInterval(state.timerInterval);
+            document.getElementById('header-actions').classList.remove('hidden');
+
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="max-w-md w-full mx-auto bg-white p-7 sm:p-9 rounded-3xl shadow-xl border border-slate-100">
+                    <div class="text-center mb-7">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 font-jp text-3xl font-bold mb-3">
+                            ひ
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-slate-800">Login Peserta Asesmen</h2>
+                        <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                            Ujian Kosakata Dasar N5 (3 Suku Kata Hiragana)<br>
+                            <strong>30 Soal</strong> • <strong>Waktu 15 Menit</strong> • <strong>Anti Pindah Tab</strong>
+                        </p>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200/80 rounded-2xl p-3.5 mb-6 text-xs text-amber-800 space-y-1">
+                        <p class="font-bold flex items-center"><i class="fa-solid fa-shield-halved mr-1.5 text-amber-600"></i> Aturan Checkpoint & Integritas:</p>
+                        <ul class="list-disc list-inside space-y-0.5 text-[11px] text-amber-700">
+                            <li>Dilarang berpindah tab/aplikasi selama mengerjakan soal.</li>
+                            <li><strong>Checkpoint Soal ke-16:</strong> Wajib meraih skor &gt; 12 untuk lanjut Level 2.</li>
+                            <li><strong>Checkpoint Soal ke-24:</strong> Jika skor ≤ 20, mengulang dari soal ke-16.</li>
+                        </ul>
+                    </div>
+
+                    <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                        <div>
+                            <label for="input-nama" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Lengkap Siswa</label>
+                            <input type="text" id="input-nama" required placeholder="Contoh: Ahmad Fauzi" value="${state.nama}"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
+                        </div>
+                        <div>
+                            <label for="input-nisa" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nomor Induk Siswa (NISA)</label>
+                            <input type="text" id="input-nisa" required placeholder="Masukkan NISA Anda" value="${state.nisa}"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
+                        </div>
+                        <div id="login-err" class="hidden text-xs font-semibold text-red-600 bg-red-50 p-3 rounded-xl border border-red-100"></div>
+                        <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all hover:scale-[1.01] active:scale-95 text-sm mt-2">
+                            Mulai Mengerjakan Soal <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                        </button>
+                    </form>
+                </div>
+            `;
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const nama = document.getElementById('input-nama').value.trim();
+            const nisa = document.getElementById('input-nisa').value.trim();
+            const errEl = document.getElementById('login-err');
+
+            if (!nama || !nisa) {
+                errEl.textContent = 'Nama lengkap dan NISA wajib diisi!';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            state.nama = nama;
+            state.nisa = nisa;
+            state.soalList = buildQuizQuestions();
+            state.currentIndex = 0;
+            state.skorMentah = 0;
+            state.skorPadaSoal15 = 0;
+            state.isLocked = false;
+            state.sisaDetik = TOTAL_WAKTU_DETIK;
+            state.halaman = 'quiz';
+
+            // Sembunyikan tombol riwayat agar tidak mengganggu saat ujian
+            document.getElementById('header-actions').classList.add('hidden');
+
+            startGlobalTimer();
+            renderQuiz();
+        }
+
+        function getLevelInfo(nomorSoal) {
+            if (nomorSoal <= 15) return { label: 'Level 1 (Dasar)', badge: 'bg-sky-100 text-sky-700' };
+            if (nomorSoal <= 23) return { label: 'Level 2 (Menengah)', badge: 'bg-indigo-100 text-indigo-700' };
+            return { label: 'Level 3 (Final)', badge: 'bg-purple-100 text-purple-700' };
+        }
+
+        function renderQuiz() {
+            const app = document.getElementById('app');
+            const soal = state.soalList[state.currentIndex];
+            const nomorSoal = state.currentIndex + 1; // 1-based index (1 s.d. 30)
+            const level = getLevelInfo(nomorSoal);
+            const progressPercent = (nomorSoal / TOTAL_SOAL) * 100;
+
+            app.innerHTML = `
+                <div class="w-full space-y-5">
+                    <!-- Status Bar Atas -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-sm">
+                                ${nomorSoal}/${TOTAL_SOAL}
+                            </div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-slate-800 text-sm">${state.nama}</span>
+                                    <span class="text-xs text-slate-400">(${state.nisa})</span>
+                                </div>
+                                <span class="inline-block mt-0.5 text-[10px] font-extrabold px-2 py-0.5 rounded-md ${level.badge}">
+                                    ${level.label}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block">Skor Benar</span>
+                                <span class="text-lg font-extrabold text-emerald-600">${state.skorMentah}</span>
+                            </div>
+                            <div class="h-8 w-px bg-slate-200"></div>
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block">Sisa Waktu</span>
+                                <span id="timer-display" class="text-lg font-mono font-extrabold text-slate-800">${formatTime(state.sisaDetik)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar Soal -->
+                    <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full transition-all duration-300" style="width: ${progressPercent}%"></div>
+                    </div>
+
+                    <!-- Kartu Soal Hiragana -->
+                    <div class="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-xl text-center">
+                        <span class="inline-block px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold tracking-wider uppercase mb-4">
+                            Soal Nomor ${nomorSoal} • Pilih Bacaan Romaji yang Tepat
+                        </span>
+
+                        <!-- Teks Hiragana 3 Suku Kata -->
+                        <div class="my-4 py-6 bg-indigo-50/60 rounded-2xl border border-indigo-100/80">
+                            <div class="font-jp text-6xl sm:text-7xl font-black text-slate-800 tracking-widest select-none">
+                                ${soal.kana}
+                            </div>
+                        </div>
+
+                        <!-- Area Notifikasi Jawaban (Sugoi / Belajar giat lagi) -->
+                        <div id="answer-feedback" class="min-h-[52px] flex items-center justify-center my-3">
+                            <p class="text-xs text-slate-400 font-medium">Klik salah satu opsi A - E di bawah ini</p>
+                        </div>
+
+                        <!-- 5 Opsi Jawaban A-E -->
+                        <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left mt-2">
+                            ${soal.options.map(opt => `
+                                <button onclick="submitAnswer('${opt.value}', this)"
+                                    class="option-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/40 transition-all flex items-center space-x-3.5 group">
+                                    <span class="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-indigo-600 group-hover:text-white font-extrabold text-sm text-slate-700 flex items-center justify-center transition-colors shrink-0">
+                                        ${opt.label}
+                                    </span>
+                                    <span class="font-bold text-base sm:text-lg text-slate-800 lowercase">
+                                        ${opt.value}
+                                    </span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function submitAnswer(selectedRomaji, btnElement) {
+            if (state.isLocked) return;
+            state.isLocked = true;
+
+            const currentSoal = state.soalList[state.currentIndex];
+            const isCorrect = selectedRomaji === currentSoal.romaji;
+            const feedbackEl = document.getElementById('answer-feedback');
+            const allButtons = document.querySelectorAll('.option-btn');
+
+            // Kunci semua tombol pilihan
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('cursor-not-allowed', 'opacity-75');
+            });
+            btnElement.classList.remove('opacity-75');
+
+            if (isCorrect) {
+                state.skorMentah += 1;
+                btnElement.classList.remove('border-slate-200');
+                btnElement.classList.add('border-emerald-500', 'bg-emerald-50');
+                btnElement.querySelector('span:first-child').classList.add('bg-emerald-600', 'text-white');
+
+                feedbackEl.innerHTML = `
+                    <div class="animate-sugoi inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-extrabold text-sm sm:text-base shadow-sm">
+                        <span>✨ Sugoi! (すごい！) — Jawaban Benar (+1 Skor)</span>
+                    </div>
+                `;
+            } else {
+                btnElement.classList.remove('border-slate-200');
+                btnElement.classList.add('border-red-500', 'bg-red-50');
+                btnElement.querySelector('span:first-child').classList.add('bg-red-600', 'text-white');
+
+                feedbackEl.innerHTML = `
+                    <div class="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-red-100 border border-red-300 text-red-800 font-bold text-sm sm:text-base shadow-sm">
+                        <span>💪 Belajar giat lagi! — Jawaban kurang tepat</span>
+                    </div>
+                `;
+            }
+
+            // Simpan snapshot skor tepat setelah menyelesaikan soal ke-15 (index 14)
+            // Berguna jika nanti di soal ke-24 (index 23) harus mengulang dari soal nomor 16 (index 15)
+            if (state.currentIndex === 14) {
+                state.skorPadaSoal15 = state.skorMentah;
+            }
+
+            setTimeout(() => {
+                evaluateCheckpointAndProceed();
+            }, 1100);
+        }
+
+        function evaluateCheckpointAndProceed() {
+            const nomorSoalSelesai = state.currentIndex + 1; // 1 s.d. 30
+
+            // ATURAN CHECKPOINT 1: Mencapai soal ke-16 (setelah mengerjakan soal ke-16 / index 15)
+            // Jika benarnya <= 12 (termasuk saat benarnya 12), sistem reload/reset kembali ke halaman login
+            if (nomorSoalSelesai === 16 && state.skorMentah <= 12) {
+                clearInterval(state.timerInterval);
+                state.halaman = 'login';
+                showCustomNotification({
+                    type: 'danger',
+                    title: 'Level 2 Terkunci',
+                    message: `Skor benar Anda saat mencapai soal ke-16 adalah ${state.skorMentah}. Jawaban Anda tidak cukup untuk lanjut ke level 2 (minimal > 12 benar). Sistem akan kembali ke halaman login.`,
+                    buttonText: 'Ulangi dari Login',
+                    onConfirm: () => renderLogin()
+                });
+                return;
+            }
+
+            // ATURAN CHECKPOINT 2: Mencapai soal ke-24 (setelah mengerjakan soal ke-24 / index 23)
+            // Jika skor masih <= 20 (termasuk saat skor masih 20), reset kembali ke soal nomor 16 dan mengulang dari soal nomor 16
+            if (nomorSoalSelesai === 24 && state.skorMentah <= 20) {
+                // Kembalikan index ke soal nomor 16 (index 15) dan kembalikan skor ke posisi sebelum soal ke-16 agar adil & tidak terjadi inflasi skor
+                state.currentIndex = 15;
+                state.skorMentah = state.skorPadaSoal15;
+                state.isLocked = false;
+
+                showCustomNotification({
+                    type: 'warning',
+                    title: 'Checkpoint Soal ke-24',
+                    message: `Skor benar Anda saat mencapai soal ke-24 belum mencukupi untuk masuk tahap akhir (skor ≤ 20). Anda akan mengulang kembali mulai dari soal nomor 16.`,
+                    buttonText: 'Ulangi dari Soal No. 16',
+                    onConfirm: () => renderQuiz()
+                });
+                return;
+            }
+
+            // Lanjut ke soal berikutnya atau selesai
+            if (state.currentIndex < TOTAL_SOAL - 1) {
+                state.currentIndex++;
+                state.isLocked = false;
+                renderQuiz();
+            } else {
+                finishQuiz('Selamat! Anda telah menyelesaikan seluruh 30 soal.');
+            }
+        }
+
+        function finishQuiz(alasanSelesai) {
+            clearInterval(state.timerInterval);
+            state.halaman = 'result';
+            document.getElementById('header-actions').classList.remove('hidden');
+
+            const skorAkhir = hitungSkorAkhir(state.skorMentah);
+            const waktuSelesai = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const tanggalSelesai = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Simpan ke riwayat skor sesi
+            state.riwayatSkor.unshift({
+                nama: state.nama,
+                nisa: state.nisa,
+                skorMentah: state.skorMentah,
+                skorAkhir: skorAkhir,
+                waktu: `${tanggalSelesai}, ${waktuSelesai}`
+            });
+
+            const isLulus = skorAkhir >= 75;
+            const app = document.getElementById('app');
+
+            // Pada halaman 'result', event blur/pindah tab tidak memicu pelanggaran sehingga siswa bebas mengambil screenshot bukti pengerjaan
+            app.innerHTML = `
+                <div class="max-w-xl w-full mx-auto space-y-5">
+                    <!-- Banner Info Screenshot -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-center space-x-2.5 text-emerald-800 text-xs font-bold">
+                        <i class="fa-solid fa-camera text-emerald-600 text-base"></i>
+                        <span>Silakan ambil Screenshot halaman ini sebagai bukti resmi telah menyelesaikan asesmen.</span>
+                    </div>
+
+                    <!-- Kartu Bukti Skor Akhir (Didesain Rapi untuk Screenshot) -->
+                    <div class="bg-white rounded-3xl border-2 border-indigo-100 shadow-2xl overflow-hidden">
+                        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white text-center relative">
+                            <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-[11px] font-bold uppercase tracking-wider mb-2">
+                                Bukti Hasil Asesmen Kotoba N5
+                            </span>
+                            <h2 class="text-2xl font-extrabold">SMK Bhakti Persada Patebon</h2>
+                            <p class="text-indigo-100 text-xs mt-1">${alasanSelesai}</p>
+                        </div>
+
+                        <div class="p-6 sm:p-8 space-y-6">
+                            <!-- Identitas Siswa -->
+                            <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-left">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Nama Siswa</span>
+                                    <span class="font-extrabold text-slate-800 text-sm sm:text-base">${state.nama}</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase text-slate-400 block">NISA</span>
+                                    <span class="font-extrabold text-slate-800 text-sm sm:text-base">${state.nisa}</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Tanggal & Waktu</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${tanggalSelesai} • ${waktuSelesai}</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Status Predikat</span>
+                                    <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-extrabold ${isLulus ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                                        ${isLulus ? 'TUNTAS (LULUS)' : 'PERLU PENGUATAN'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Rincian Skor & Rumus -->
+                            <div class="text-center py-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                                <span class="text-xs font-bold uppercase tracking-wider text-indigo-500 block">Skor Akhir Asesmen</span>
+                                <div class="text-6xl font-black text-indigo-700 my-1">${skorAkhir}</div>
+                                <p class="text-xs text-slate-500 font-medium">
+                                    Jawaban Benar: <strong class="text-slate-800">${state.skorMentah} / ${TOTAL_SOAL}</strong> 
+                                    <span class="mx-1">•</span> 
+                                    Rumus: (${state.skorMentah} × 3) + 10
+                                </p>
+                            </div>
+
+                            <!-- Tombol Aksi -->
+                            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                                <button onclick="openHistoryModal()" class="flex-1 py-3.5 px-4 rounded-xl border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
+                                    <span>Lihat Riwayat Skor</span>
+                                </button>
+                                <button onclick="renderLogin()" class="flex-1 py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-200 transition-all flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                    <span>Kerjakan Ulang</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Inisialisasi Awal
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLogin();
+        });
+    </script>
+</body>
+</html>
